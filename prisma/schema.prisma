@@ -1,0 +1,399 @@
+// Proveniq Core - Prisma Schema
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// AUTHENTICATION & AUTHORIZATION
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  passwordHash  String?
+  role          Role      @default(USER)
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  accounts      Account[]
+  sessions      Session[]
+  apiKeys       ApiKey[]
+  organizations OrganizationMember[]
+  auditLogs     AuditLog[]
+  documents     Document[]
+  
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+enum Role {
+  USER
+  ADMIN
+  AUDITOR
+  INVESTOR
+}
+
+// ============================================
+// MULTI-TENANCY
+// ============================================
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  members   OrganizationMember[]
+  apiKeys   ApiKey[]
+  assets    Asset[]
+  auditLogs AuditLog[]
+  webhooks  Webhook[]
+  documents Document[]
+  searchIndices SearchIndex[]
+  
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id             String       @id @default(cuid())
+  userId         String
+  organizationId String
+  role           OrgRole      @default(MEMBER)
+  
+  createdAt      DateTime     @default(now())
+  
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, organizationId])
+  @@map("organization_members")
+}
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+// ============================================
+// API KEYS
+// ============================================
+
+model ApiKey {
+  id             String       @id @default(cuid())
+  name           String
+  keyHash        String       @unique
+  keyPrefix      String
+  scopes         String[]
+  
+  userId         String?
+  organizationId String?
+  
+  lastUsedAt     DateTime?
+  expiresAt      DateTime?
+  
+  createdAt      DateTime     @default(now())
+  revokedAt      DateTime?
+  
+  user           User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  usageLogs      ApiKeyUsage[]
+  
+  @@map("api_keys")
+}
+
+model ApiKeyUsage {
+  id        String   @id @default(cuid())
+  apiKeyId  String
+  endpoint  String
+  method    String
+  status    Int
+  latencyMs Int
+  
+  createdAt DateTime @default(now())
+  
+  apiKey    ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  
+  @@index([apiKeyId, createdAt])
+  @@map("api_key_usage")
+}
+
+// ============================================
+// AUDIT LOGGING
+// ============================================
+
+model AuditLog {
+  id             String       @id @default(cuid())
+  action         String
+  entityType     String
+  entityId       String?
+  metadata       Json?
+  ipAddress      String?
+  userAgent      String?
+  
+  userId         String?
+  organizationId String?
+  
+  createdAt      DateTime     @default(now())
+  
+  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  
+  @@index([entityType, entityId])
+  @@index([userId, createdAt])
+  @@index([organizationId, createdAt])
+  @@map("audit_logs")
+}
+
+// ============================================
+// ASSETS & VERIFICATION
+// ============================================
+
+model Asset {
+  id             String       @id @default(cuid())
+  externalId     String?
+  name           String
+  category       String
+  status         AssetStatus  @default(PENDING)
+  metadata       Json?
+  
+  organizationId String
+  
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  verifications  Verification[]
+  
+  @@unique([organizationId, externalId])
+  @@map("assets")
+}
+
+model Verification {
+  id             String             @id @default(cuid())
+  assetId        String
+  type           VerificationType
+  status         VerificationStatus @default(PENDING)
+  confidence     Float?
+  evidenceHash   String?
+  metadata       Json?
+  
+  requestedAt    DateTime           @default(now())
+  completedAt    DateTime?
+  
+  asset          Asset              @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  
+  @@index([assetId, requestedAt])
+  @@map("verifications")
+}
+
+enum AssetStatus {
+  PENDING
+  VERIFIED
+  FLAGGED
+  ARCHIVED
+}
+
+enum VerificationType {
+  OWNERSHIP
+  CONDITION
+  LOCATION
+  EXISTENCE
+}
+
+enum VerificationStatus {
+  PENDING
+  PROCESSING
+  VERIFIED
+  FAILED
+  EXPIRED
+}
+
+// ============================================
+// WEBHOOKS
+// ============================================
+
+model Webhook {
+  id             String            @id @default(cuid())
+  url            String
+  secret         String
+  events         String[]
+  isActive       Boolean           @default(true)
+  
+  organizationId String
+  
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  deliveries     WebhookDelivery[]
+  
+  @@map("webhooks")
+}
+
+model WebhookDelivery {
+  id           String        @id @default(cuid())
+  webhookId    String
+  event        String
+  payload      Json
+  status       DeliveryStatus @default(PENDING)
+  statusCode   Int?
+  responseBody String?       @db.Text
+  attempts     Int           @default(0)
+  
+  createdAt    DateTime      @default(now())
+  deliveredAt  DateTime?
+  
+  webhook      Webhook       @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  
+  @@index([webhookId, createdAt])
+  @@map("webhook_deliveries")
+}
+
+enum DeliveryStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  RETRYING
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  metadata  Json?
+  readAt    DateTime?
+  
+  createdAt DateTime         @default(now())
+  
+  @@index([userId, readAt, createdAt])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  VERIFICATION
+  SYSTEM
+}
+
+// ============================================
+// DOCUMENT STORAGE
+// ============================================
+
+model Document {
+  id             String         @id @default(cuid())
+  organizationId String
+  userId         String?
+  
+  name           String
+  key            String         // S3 key
+  contentType    String
+  size           Int
+  url            String?        // Public URL if applicable
+  
+  status         DocumentStatus @default(PENDING)
+  metadata       Json?
+  
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@index([organizationId])
+  @@map("documents")
+}
+
+enum DocumentStatus {
+  PENDING
+  UPLOADED
+  PROCESSING
+  READY
+  FAILED
+  ARCHIVED
+}
+
+// ============================================
+// SEARCH SYSTEM
+// ============================================
+
+model SearchIndex {
+  id             String   @id @default(cuid())
+  organizationId String
+  
+  entityType     String
+  entityId       String
+  content        String   @db.Text
+  title          String
+  metadata       Json?
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  @@unique([organizationId, entityType, entityId])
+  @@index([organizationId, entityType])
+  @@map("search_indices")
+}
