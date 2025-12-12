@@ -4,6 +4,9 @@ import React, { useEffect } from "react";
 import { useSystemStore } from "@/lib/store";
 import { BiometricGate } from "@/components/auth/BiometricGate";
 import { AuditLog } from "@/components/visualizations/AuditLog";
+import { AudioFeedback } from "@/components/ui/AudioFeedback";
+import { TacticalHUD } from "@/components/ui/TacticalHUD";
+import { DeadManSwitch } from "@/components/security/DeadManSwitch";
 import { AppSidebar } from "./AppSidebar";
 import { NeuralPalette } from "../ui/NeuralPalette";
 import { LAYOUT } from "@/lib/physics";
@@ -32,6 +35,9 @@ export function SystemShell({ children }: { children: React.ReactNode }) {
             >
                 <main className="flex-1 overflow-y-auto overflow-x-hidden relative">
                     <NeuralPalette />
+                    <AudioFeedback />
+                    <TacticalHUD />
+                    <DeadManSwitch />
                     {children}
                     <AuditLog />
                 </main>

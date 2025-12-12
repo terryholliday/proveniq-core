@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { PROVENIQ_DNA } from "@/lib/config";
 import { TIMING } from "@/lib/physics";
+import { AUDIO } from "@/lib/audio";
 
 type CoreState = "IDLE" | "HANDSHAKE" | "SYNC" | "ACTIVE";
 
@@ -33,7 +34,18 @@ export function CoreNetwork() {
         }, 2000);
 
         return () => clearInterval(interval);
+        return () => clearInterval(interval);
     }, []);
+
+    // Audio Sync
+    useEffect(() => {
+        if (!shouldReduceMotion) {
+            // Only drone if motion is allowed (implies audio allowed too in this context, mostly)
+            const intensity = state === 'ACTIVE' ? 1 : state === 'SYNC' ? 0.5 : 0;
+            AUDIO.setDrone(intensity > 0, intensity);
+        }
+        return () => AUDIO.setDrone(false);
+    }, [state, shouldReduceMotion]);
 
     const currentState = STATE_CONFIG[state];
 
