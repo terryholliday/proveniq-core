@@ -1,24 +1,19 @@
-export const PROVENIQ_DNA = {
-  products: [
-    { id: "home", label: "Home", type: "Software", role: "Ingest", routeSlug: "home", docSlug: "proveniq-home" },
-    { id: "ledger", label: "Ledger", type: "Software", role: "Verify", routeSlug: "ledger", docSlug: "proveniq-ledger" },
-    { id: "claims-iq", label: "ClaimsIQ", type: "Software", role: "Adjudicate", routeSlug: "claims-iq", docSlug: "proveniq-claims-iq" },
-    { id: "bids", label: "Bids", type: "Software", role: "Liquidate", routeSlug: "bids", docSlug: "proveniq-bids" },
-    { id: "core", label: "Core", type: "Infrastructure", role: "Orchestrate", routeSlug: "core", docSlug: "proveniq-core" },
-    { id: "capital", label: "Capital", type: "Infrastructure", role: "Finance", routeSlug: "capital", docSlug: "proveniq-capital" },
-    { id: "locker", label: "Locker", type: "Hardware", role: "Secure", routeSlug: "locker", docSlug: "anti-fraud-locker" },
-    { id: "smart-tag", label: "SmartTags", type: "Hardware", role: "Track", routeSlug: "smart-tag", docSlug: "smart-tag-system" }
+import { z } from 'zod';
+
+export const APP_DNA = {
+  brand: { name: 'PROVENIQ', version: 'v1.0-SOVEREIGN' },
+  theme: { active: 'slate-950', accent: 'emerald-500', danger: 'red-500' },
+  routes: [
+    { id: 'nexus', label: 'COMMAND', path: '/nexus' },
+    { id: 'sentinels', label: 'SENTINELS', path: '/sentinels' },
+    { id: 'intelligence', label: 'ENTITY_GRAPH', path: '/intelligence' }
   ],
-  theme: {
-    fonts: { ui: "Inter", data: "JetBrains Mono" },
-    colors: {
-      bg: "slate-950",
-      panel: "slate-900",
-      accent: "sky-500",
-      success: "emerald-500"
-    },
-    motion: {
-      easeHeavy: [0.22, 1, 0.36, 1]
-    }
+  security: {
+    maxOutflowLimit: 1000000,
+    yubiKeyRequired: true
   }
-} as const;
+};
+
+export const DNASchema = z.object({
+  security: z.object({ maxOutflowLimit: z.number() })
+});

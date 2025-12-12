@@ -1,49 +1,18 @@
-"use client";
+'use client';
+import { NeuralConsole } from '@/components/ui/NeuralConsole';
+import BiometricGate from '@/components/auth/BiometricGate';
+import { useState } from 'react';
 
-import React, { useEffect } from "react";
-import { useSystemStore } from "@/lib/store";
-import { BiometricGate } from "@/components/auth/BiometricGate";
-import { AuditLog } from "@/components/visualizations/AuditLog";
-import { AudioFeedback } from "@/components/ui/AudioFeedback";
-import { TacticalHUD } from "@/components/ui/TacticalHUD";
-import { DeadManSwitch } from "@/components/security/DeadManSwitch";
-import { AppSidebar } from "./AppSidebar";
-import { NeuralConsole } from "@/components/ui/NeuralConsole"; // Changed from NeuralPalette
-import { LAYOUT } from "@/lib/physics";
-import { InvestorTrigger } from "@/components/demo/InvestorTrigger";
+export default function SystemShell({ children }: { children: React.ReactNode }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-export function SystemShell({ children }: { children: React.ReactNode }) {
-    const { isAuthenticated, login } = useSystemStore();
-    const [mounted, setMounted] = React.useState(false);
+  if (!isAuthenticated) return <BiometricGate onUnlock={() => setIsAuthenticated(true)} />;
 
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    // Hydration fix / Initial load
-    if (!mounted) return null;
-
-    if (!isAuthenticated) {
-        return <BiometricGate />;
-    }
-
-    return (
-        <div className="flex h-screen w-full">
-            <AppSidebar />
-            <div
-                className="flex-1 flex flex-col h-full overflow-hidden relative"
-                style={{ marginLeft: LAYOUT.sidebarWidth }}
-            >
-                <main className="flex-1 overflow-y-auto overflow-x-hidden relative">
-                    <NeuralConsole /> {/* Changed from NeuralPalette */}
-                    <AudioFeedback />
-                    <TacticalHUD />
-                    <DeadManSwitch />
-                    {children}
-                    <AuditLog />
-                    <InvestorTrigger />
-                </main>
-            </div>
-        </div>
-    );
+  return (
+    <main className="h-screen w-screen bg-slate-950 text-slate-200 overflow-hidden font-sans selection:bg-emerald-500/30">
+      <div className="fixed inset-0 z-0 bg-[url('/grid.svg')] opacity-5 pointer-events-none" />
+      {children}
+      <NeuralConsole />
+    </main>
+  );
 }
