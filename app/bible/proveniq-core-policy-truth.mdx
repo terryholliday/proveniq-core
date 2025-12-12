@@ -1,0 +1,70 @@
+export const meta = {
+  title: "Policy Truth: The System of Record Thesis",
+  author: "Proveniq Architect",
+  last_updated: "2025-12-12"
+};
+
+# Policy Truth: The System of Record Thesis
+
+## The Problem: Binary Verification Failed
+
+In legacy systems (and Gen 1 crypto), verification was binary:
+- **Verified**: Yes/No
+- **Authentic**: True/False
+
+This failed because **Marketplace participants have different risk appetites.**
+
+- An **Insurer** insuring a $50k asset needs 99.9% certainty.
+- A **Lender** cares more about liquidity (can I sell this?) than perfect provenance.
+- A **Marketplace** wants velocity—if it's 80% sure, let the buyer decide (Disclosure).
+
+**If the protocol forces a single "True/False", it fails 2 out of 3 participants.**
+
+---
+
+## The Solution: Policy-Based Truth
+
+Proveniq-Core introduces **Policy Packs**. The Core Ledger doesn't just store "Verified". It stores **"Verified against Policy X v1.0"**.
+
+### 1. Different Truths for the Same Facts
+
+We take the exact same input signals (Optical, Serial, Custody):
+
+| Policy | Persona | Goal | Decision | Logic |
+| :--- | :--- | :--- | :--- | :--- |
+| **Insurer** | Claims Adjuster | Zero Fraud | **REJECTED** | Fraud score 0.35 exceeds strict 0.30 limit. |
+| **Lender** | Capital Provider | Liquidity | **REVIEW** | Identity is fine, but Market Volume is too low. |
+| **Marketplace** | Seller | Velocity | **VERIFIED** | Disclosure added: "Moderate Fraud Risk". Buyer accepts. |
+
+### 2. Pricing Power
+
+This architecture creates a "Tollbooth" business model.
+- **Base Verification**: Free/Cheap (Marketplace Policy).
+- **Insurer Grade**: Premium (Requires stricter data, higher compute).
+- **Lender Grade**: Specialized (Requires liquidity signals + Locker integration).
+
+We don't just sell "verification". We sell **certainty tuned to specific liabilities.**
+
+---
+
+## Technical Defensibility (The Moat)
+
+Competitors run "AI Scoring" (Black Box).
+We run **Deterministic Policy Engines** (Transparent Contracts).
+
+### Confidence Decay
+
+Truth rots. A verification from 2024 is useless in 2026.
+Our **Decay Engine** automates this entropy:
+- **Insurer Policy**: Hard expiration in 180 days.
+- **Lender Policy**: Extended if held in Proveniq Locker.
+- **Marketplace**: Degrades to "Verified with Disclosure" after 1 year.
+
+**This forces recurring revenue (re-verification) and keeps the ledger alive.**
+
+---
+
+## Conclusion
+
+Proveniq-Core is not just a checker; it is a **Risk Orchestration Layer**.
+By decoupling **Facts** (Signals) from **Decisions** (Policies), we become the universal rail for Insurers, Lenders, and Marketplaces simultaneously.
