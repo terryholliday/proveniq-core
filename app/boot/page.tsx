@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { PROVENIQ_DNA } from "@/lib/config";
 import { AUDIO } from "@/lib/audio";
 
+import { Constellation } from "@/components/visualizations/Constellation";
+
 export default function BootPage() {
     const router = useRouter();
 
@@ -23,7 +25,7 @@ export default function BootPage() {
 
     return (
         <div className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden">
-            <div className="w-full max-w-xl p-8 font-mono text-sm leading-relaxed">
+            <div className="w-full max-w-xl p-8 font-mono text-sm leading-relaxed relative z-10">
                 <SequenceLine delay={0.2} text="> INITIALIZING KERNEL v3.2..." color="text-slate-500" />
                 <SequenceLine delay={0.8} text="> LOADING DNA SEQUENCE..." color="text-slate-400" />
                 <SequenceLine delay={1.4} text="> DNA::VERIFIED [OK]" color="text-emerald-500" />
@@ -36,6 +38,14 @@ export default function BootPage() {
                     transition={{ duration: 3, delay: 0.5, ease: "easeInOut" }}
                     className="mt-8 h-1 bg-sky-500 rounded-full"
                 />
+            </div>
+
+            {/* GPU WARMUP (Constellation Shader Pre-compile) */}
+            <div className="absolute inset-0 opacity-0 pointer-events-none z-0">
+                {/* Render a tiny Constellation to force WebGL context creation */}
+                <div className="w-1 h-1 overflow-hidden">
+                    <Constellation />
+                </div>
             </div>
 
             {/* Background Grid */}

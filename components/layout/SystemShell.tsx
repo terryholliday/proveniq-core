@@ -8,8 +8,9 @@ import { AudioFeedback } from "@/components/ui/AudioFeedback";
 import { TacticalHUD } from "@/components/ui/TacticalHUD";
 import { DeadManSwitch } from "@/components/security/DeadManSwitch";
 import { AppSidebar } from "./AppSidebar";
-import { NeuralPalette } from "../ui/NeuralPalette";
+import { NeuralConsole } from "@/components/ui/NeuralConsole"; // Changed from NeuralPalette
 import { LAYOUT } from "@/lib/physics";
+import { InvestorTrigger } from "@/components/demo/InvestorTrigger";
 
 export function SystemShell({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, login } = useSystemStore();
@@ -34,12 +35,13 @@ export function SystemShell({ children }: { children: React.ReactNode }) {
                 style={{ marginLeft: LAYOUT.sidebarWidth }}
             >
                 <main className="flex-1 overflow-y-auto overflow-x-hidden relative">
-                    <NeuralPalette />
+                    <NeuralConsole /> {/* Changed from NeuralPalette */}
                     <AudioFeedback />
                     <TacticalHUD />
                     <DeadManSwitch />
                     {children}
                     <AuditLog />
+                    <InvestorTrigger />
                 </main>
             </div>
         </div>

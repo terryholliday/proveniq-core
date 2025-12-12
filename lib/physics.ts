@@ -38,3 +38,10 @@ export const BUDGET = {
         use: ['transform', 'opacity'], // Whitelist
     }
 } as const;
+
+export const FLYWHEEL = {
+    radius: 200,
+    rotation: 360,
+    duration: 20,
+    labelDelay: 16,
+} as const;

@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { PROVENIQ_DNA } from "@/lib/config";
-import { BUDGET, TIMING } from "@/lib/physics";
+import { BUDGET, FLYWHEEL } from "@/lib/physics";
 
 /**
  * PROVENIQ Flywheel
@@ -27,12 +27,12 @@ export function Flywheel() {
     const spinTransition = {
         repeat: Infinity,
         ease: "linear",
-        duration: 20,
+        duration: FLYWHEEL.duration,
     };
 
     const orbitContainerVariants = {
         animate: {
-            rotate: 360,
+            rotate: FLYWHEEL.rotation,
         },
         static: {
             rotate: 0,
@@ -41,7 +41,7 @@ export function Flywheel() {
 
     const particleVariants = {
         animate: {
-            rotate: -360, // Counter-rotate to keep labels upright if needed, or just orbit
+            rotate: -FLYWHEEL.rotation, // Counter-rotate to keep nodes upright
         },
         static: {
             rotate: 0,
@@ -69,22 +69,19 @@ export function Flywheel() {
             >
                 {particles.map((product, index) => {
                     // Distribute particles evenly on the circle
-                    const angle = (index / particles.length) * 360;
+                    const angle = (index / particles.length) * FLYWHEEL.rotation;
 
                     return (
                         <div
                             key={product.id}
                             className="absolute top-1/2 left-1/2 w-0 h-0"
                             style={{
-                                transform: `rotate(${angle}deg) translateX(200px)`, // 200px radius
+                                transform: `rotate(${angle}deg) translateX(${FLYWHEEL.radius}px)`,
                             }}
                         >
                             {/* Particle Node */}
                             <motion.div
                                 className="flex flex-col items-center justify-center -translate-x-1/2 -translate-y-1/2"
-                                // Counter-rotate logic could be here if we want text upright, 
-                                // but strictly following transform/opacity implies keeping it simple.
-                                // We will just render a simple node.
                                 variants={particleVariants}
                                 animate={shouldReduceMotion ? "static" : "animate"}
                                 transition={shouldReduceMotion ? {} : spinTransition}
@@ -95,7 +92,7 @@ export function Flywheel() {
                                     <span className="text-[10px] font-mono text-sky-500">{product.id.substring(0, 2).toUpperCase()}</span>
                                 </div>
 
-                                {/* Label - hidden on motion to reduce paint cost, visible on hover or simplified */}
+                                {/* Label - hidden on motion to reduce paint cost, visible on hover */}
                                 <span className="absolute mt-16 text-xs text-slate-500 font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                                     {product.label}
                                 </span>

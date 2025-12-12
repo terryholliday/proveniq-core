@@ -37,8 +37,41 @@ export function AppSidebar() {
                                         <Link
                                             href={`/products/${product.routeSlug}`}
                                             className={`flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors ${isActive
-                                                    ? "bg-slate-800 text-sky-500"
-                                                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                                                ? "bg-slate-800 text-sky-500"
+                                                : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                                                }`}
+                                        >
+                                            {product.label}
+                                            {isActive && (
+                                                <motion.div
+                                                    layoutId="active-indicator"
+                                                    className="ml-auto w-1.5 h-1.5 rounded-full bg-sky-500"
+                                                />
+                                            )}
+                                        </Link>
+                                    </li>
+                                );
+                            })}
+                    </ul>
+                </div>
+
+                {/* Infrastructure Section */}
+                <div>
+                    <h3 className="px-2 mb-2 text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                        Infrastructure
+                    </h3>
+                    <ul className="space-y-1">
+                        {PROVENIQ_DNA.products
+                            .filter((p) => p.type === "Infrastructure")
+                            .map((product) => {
+                                const isActive = pathname.startsWith(`/products/${product.routeSlug}`);
+                                return (
+                                    <li key={product.id}>
+                                        <Link
+                                            href={`/products/${product.routeSlug}`}
+                                            className={`flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors ${isActive
+                                                ? "bg-slate-800 text-sky-500"
+                                                : "text-slate-400 hover:text-white hover:bg-slate-800/50"
                                                 }`}
                                         >
                                             {product.label}
@@ -70,8 +103,8 @@ export function AppSidebar() {
                                         <Link
                                             href={`/hardware/${product.routeSlug}`}
                                             className={`flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors ${isActive
-                                                    ? "bg-slate-800 text-sky-500"
-                                                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                                                ? "bg-slate-800 text-sky-500"
+                                                : "text-slate-400 hover:text-white hover:bg-slate-800/50"
                                                 }`}
                                         >
                                             {product.label}
