@@ -1,68 +1,61 @@
 "use client";
 
-import React, { useMemo } from 'react';
-import { AgGridReact } from 'ag-grid-react'; // React Data Grid Component
-import { ColDef, ModuleRegistry, ClientSideRowModelModule, ValidationModule } from 'ag-grid-community';
+import React from 'react';
 import { PROVENIQ_DNA } from "@/lib/config";
-import 'ag-grid-community/styles/ag-grid.css'; // Mandatory CSS required by the grid
-import 'ag-grid-community/styles/ag-theme-quartz.css'; // Optional Theme applied to the grid
-
-ModuleRegistry.registerModules([ClientSideRowModelModule, ValidationModule]);
 
 interface DataMatrixProps {
     rowData: any[];
-    columnDefs: ColDef[];
+    columnDefs: any[];
     height?: string | number;
 }
 
 export function DataMatrix({ rowData, columnDefs, height = 500 }: DataMatrixProps) {
-
-    const defaultColDef = useMemo(() => {
-        return {
-            flex: 1,
-            minWidth: 100,
-            filter: true,
-            sortable: true,
-            resizable: true,
-            cellStyle: { color: '#94a3b8', fontFamily: PROVENIQ_DNA.theme.fonts.data }, // Slate-400
-        };
-    }, []);
-
+    // Simplified table implementation to avoid ag-grid webpack issues
     return (
         <div
-            className="ag-theme-quartz-dark w-full"
+            className="w-full overflow-auto border border-slate-800 rounded-lg"
             style={{ height }}
         >
-            <style jsx global>{`
-                .ag-theme-quartz-dark {
-                    /* Customizing Quartz Theme to match Proveniq Slate-950 */
-                    --ag-background-color: #0f172a; /* slate-900 */
-                    --ag-header-background-color: #020617; /* slate-950 */
-                    --ag-row-hover-color: #1e293b; /* slate-800 */
-                    --ag-odd-row-background-color: #0f172a;
-                    --ag-border-color: #1e293b;
-                    --ag-header-foreground-color: #e2e8f0; /* slate-200 */
-                    --ag-foreground-color: #94a3b8; /* slate-400 */
-                    --ag-font-family: ${PROVENIQ_DNA.theme.fonts.data};
-                    --ag-font-size: 13px;
-                }
-                .ag-header-cell-label {
-                   font-weight: 600;
-                   letter-spacing: 0.05em;
-                   text-transform: uppercase;
-                   font-size: 11px;
-                   color: #64748b; /* slate-500 */
-                }
-            `}</style>
-
-            <AgGridReact
-                rowData={rowData}
-                columnDefs={columnDefs}
-                defaultColDef={defaultColDef}
-                rowSelection="multiple"
-                animateRows={true}
-                overlayNoRowsTemplate='<span class="text-slate-500 font-mono">NO_SIGNAL_DETECTED</span>'
-            />
+            <table className="w-full text-sm">
+                <thead className="bg-slate-950 sticky top-0">
+                    <tr>
+                        {columnDefs.map((col: any, i: number) => (
+                            <th
+                                key={i}
+                                className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-800"
+                            >
+                                {col.headerName || col.field}
+                            </th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody className="bg-slate-900/50">
+                    {rowData.length === 0 ? (
+                        <tr>
+                            <td colSpan={columnDefs.length} className="px-4 py-8 text-center text-slate-500 font-mono">
+                                NO_SIGNAL_DETECTED
+                            </td>
+                        </tr>
+                    ) : (
+                        rowData.map((row: any, rowIndex: number) => (
+                            <tr
+                                key={rowIndex}
+                                className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors"
+                            >
+                                {columnDefs.map((col: any, colIndex: number) => (
+                                    <td
+                                        key={colIndex}
+                                        className="px-4 py-3 text-slate-400"
+                                        style={{ fontFamily: PROVENIQ_DNA.theme.fonts.data }}
+                                    >
+                                        {row[col.field] ?? '-'}
+                                    </td>
+                                ))}
+                            </tr>
+                        ))
+                    )}
+                </tbody>
+            </table>
         </div>
     );
 }

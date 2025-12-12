@@ -277,7 +277,7 @@ function HardFailQuiz({ quiz, onComplete }: { quiz: any, onComplete: () => void 
     return (
         <div className="bg-slate-900/20 border border-slate-800 p-6 md:p-8">
             <h3 className="font-bold text-white mb-6 flex items-center gap-3 uppercase tracking-widest text-xs">
-                <span className="text-emerald-500 flash">>></span> Tactical Assessment
+                <span className="text-emerald-500 flash">{'>>'}</span> Tactical Assessment
             </h3>
             <p className="text-sm text-slate-300 mb-8 font-mono">{quiz.question}</p>
 
@@ -305,7 +305,7 @@ function HardFailQuiz({ quiz, onComplete }: { quiz: any, onComplete: () => void 
                     animate={{ opacity: 1 }}
                     className="mt-4 text-center text-emerald-500 text-xs font-bold uppercase tracking-widest"
                 >
-                    >> INTEGRITY VERIFIED. PROCEEDING...
+                    {'>>'} INTEGRITY VERIFIED. PROCEEDING...
                 </motion.div>
             )}
         </div>

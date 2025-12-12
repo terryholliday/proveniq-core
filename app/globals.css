@@ -2,18 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-  }
-  body {
-    @apply bg-background text-foreground antialiased selection:bg-proveniq-accent/30;
-  }
+:root {
+  --background: #0f172a;
+  --foreground: #f8fafc;
 }
 
-@layer utilities {
-  .glass-panel {
-    @apply bg-proveniq-panel/40 backdrop-blur-md border border-white/10 shadow-xl;
-  }
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.glass-panel {
+  background-color: rgba(30, 41, 59, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
