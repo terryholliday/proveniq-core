@@ -140,7 +140,7 @@
     Output: components/auth/TwoFactorSetup.tsx
     Depends: L2.4.1
 
-[ ] L2.4.3 Passkey/WebAuthn
+[x] L2.4.3 Passkey/WebAuthn
     Output: lib/auth/passkey.ts
     Depends: L1.2.1
 
@@ -272,11 +272,11 @@
     Output: components/ThemeToggle.tsx
     Depends: L4.2.1
 
-[ ] L4.2.3 Reduced Motion Respect
+[x] L4.2.3 Reduced Motion Respect
     Output: lib/motion/reducedMotion.ts
     Depends: (none — extend existing)
 
-[ ] L4.2.4 Skip Links
+[x] L4.2.4 Skip Links
     Output: components/SkipLinks.tsx
     Depends: (none)
 ```
@@ -358,8 +358,8 @@
     Output: app/api/errors/route.ts
     Depends: L5.2.1
 
-[ ] L5.2.3 Error Context
-    Output: lib/error/context.ts
+[x] L5.2.3 Error Context
+    Output: lib/errors/context.tsx
     Depends: L5.2.1
 ```
 

@@ -18,6 +18,13 @@ export const Z_INDEX = {
   hud: 200,
 } as const;
 
+export const TIMING = {
+  fast: 0.15,
+  normal: 0.3,
+  slow: 0.5,
+  stagger: 0.05,
+} as const;
+
 export function formatBytes(bytes: number, decimals = 2): string {
   if (bytes === 0) return "0 Bytes";
   const k = 1024;

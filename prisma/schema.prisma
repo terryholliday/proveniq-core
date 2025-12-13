@@ -31,6 +31,7 @@ model User {
   organizations OrganizationMember[]
   auditLogs     AuditLog[]
   documents     Document[]
+  passkeys      Passkey[]
   
   @@map("users")
 }
@@ -73,6 +74,46 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+// ============================================
+// PASSKEY / WEBAUTHN
+// ============================================
+
+model Passkey {
+  id                  String   @id @default(cuid())
+  userId              String
+  credentialId        String   @unique
+  credentialPublicKey Bytes
+  counter             BigInt
+  transports          String[]
+  deviceName          String?
+  
+  createdAt           DateTime @default(now())
+  lastUsedAt          DateTime?
+  
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@map("passkeys")
+}
+
+model PasskeyChallenge {
+  id        String   @id @default(cuid())
+  userId    String?
+  challenge String   @unique
+  type      PasskeyChallengeType
+  expiresAt DateTime
+  
+  createdAt DateTime @default(now())
+  
+  @@index([challenge])
+  @@map("passkey_challenges")
+}
+
+enum PasskeyChallengeType {
+  REGISTRATION
+  AUTHENTICATION
 }
 
 enum Role {

@@ -1,10 +1,14 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
-import { useSystemStore } from "@/lib/store";
+import React from "react";
+import { useSystemStore, AuditRecord } from "@/lib/store";
+
+interface StoreState {
+    auditLog: AuditRecord[];
+}
 
 export function AuditLog() {
-    const auditLog = useSystemStore((state) => state.auditLog);
+    const auditLog = useSystemStore((state: StoreState) => state.auditLog);
     // Just show last 5 entries to save space in UI, or full list in a modal
     // For now, let's make it a small readout component
 
@@ -16,7 +20,7 @@ export function AuditLog() {
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 </div>
                 <div className="space-y-0.5 max-h-32 overflow-hidden flex flex-col-reverse">
-                    {auditLog.slice(0, 5).map((record) => (
+                    {auditLog.slice(0, 5).map((record: AuditRecord) => (
                         <div key={record.id} className="truncate">
                             <span className="text-slate-500">[{record.timestamp.split('T')[1].split('.')[0]}]</span> {record.action}
                         </div>
