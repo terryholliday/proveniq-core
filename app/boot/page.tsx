@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { PROVENIQ_DNA } from "@/lib/config";
 import { AUDIO } from "@/lib/audio";
 
-import { Constellation } from "@/components/visualizations/Constellation";
+import { ConstellationView as Constellation } from "@/components/visualizations/Constellation";
 
 export default function BootPage() {
     const router = useRouter();
@@ -44,7 +44,7 @@ export default function BootPage() {
             <div className="absolute inset-0 opacity-0 pointer-events-none z-0">
                 {/* Render a tiny Constellation to force WebGL context creation */}
                 <div className="w-1 h-1 overflow-hidden">
-                    <Constellation />
+                    <Constellation data={{ nodes: [], links: [] }} />
                 </div>
             </div>
 

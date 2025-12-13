@@ -1,7 +1,21 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Constellation } from "@/components/visualizations/Constellation";
+import { ConstellationView as Constellation } from "@/components/visualizations/Constellation";
+
+const DEMO_DATA = {
+    nodes: [
+        { id: 'core', color: '#0ea5e9' },
+        { id: 'home', color: '#10b981' },
+        { id: 'ledger', color: '#10b981' },
+        { id: 'locker', color: '#f59e0b' },
+    ],
+    links: [
+        { source: 'core', target: 'home' },
+        { source: 'core', target: 'ledger' },
+        { source: 'core', target: 'locker' },
+    ]
+};
 
 export default function HolodeckPage() {
     const [mounted, setMounted] = useState(false);
@@ -28,7 +42,7 @@ export default function HolodeckPage() {
                   Note: ForceGraph3D handles its own resize broadly, 
                   but needs a container with defined dimensions.
                 */}
-                {mounted && <Constellation />}
+                {mounted && <Constellation data={DEMO_DATA} />}
             </div>
         </div>
     );

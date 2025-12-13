@@ -6,9 +6,9 @@ import { DecisionResponse } from "@/lib/core/types";
 export const dynamic = 'force-dynamic';
 
 interface Context {
-    params: {
+    params: Promise<{
         event_id: string;
-    }
+    }>
 }
 
 /**
@@ -19,10 +19,7 @@ interface Context {
  */
 export async function GET(req: NextRequest, { params }: Context) {
     try {
-        const { event_id } = await params; // Ensure params is awaited if version requires it, or just access. Next 15 requires await.
-        // Assuming Next 14/13 style where params object is available. But let's be safe.
-        // Just access params.event_id directly if possible, or await it.
-        // For safety in older/newer compat:
+        const { event_id } = await params;
         const eventId = event_id;
 
         const event = LEDGER.getEvent(eventId);

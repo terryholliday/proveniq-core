@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 
 // Enforcing stricter type safety for the dynamic route
 interface PageProps {
-    params: {
+    params: Promise<{
         routeSlug: string;
-    };
+    }>;
 }
 
 export function generateStaticParams() {
@@ -16,9 +16,10 @@ export function generateStaticParams() {
         }));
 }
 
-export default function ProductPage({ params }: PageProps) {
+export default async function ProductPage({ params }: PageProps) {
+    const { routeSlug } = await params;
     const product = PROVENIQ_DNA.products.find(
-        (p) => p.routeSlug === params.routeSlug && p.type === "Software"
+        (p) => p.routeSlug === routeSlug && p.type === "Software"
     );
 
     if (!product) {

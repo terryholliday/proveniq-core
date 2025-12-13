@@ -184,7 +184,7 @@ export default function AcademyPage() {
                                     <span className="text-slate-700 font-mono text-xs pt-1">0{i + 1}</span>
                                     <div className="flex-1">
                                         <p className="text-sm md:text-base text-slate-300 leading-relaxed font-sans whitespace-pre-line">
-                                            {para.replace(/```.*?```/gs, "")}
+                                            {para.replace(/```[\s\S]*?```/g, "")}
                                         </p>
 
                                         {/* SIMULATOR INJECTION NODE */}
@@ -197,7 +197,7 @@ export default function AcademyPage() {
                                         {/* CODE BLOCK RENDERER */}
                                         {para.includes("```") && (
                                             <div className="mt-4 p-4 bg-slate-950 border border-slate-800 rounded font-mono text-xs text-emerald-400 overflow-x-auto">
-                                                <pre>{para.match(/```(.*?)```/s)?.[1].replace(/mermaid|json/g, "")}</pre>
+                                                <pre>{para.match(/```([\s\S]*?)```/)?.[1].replace(/mermaid|json/g, "")}</pre>
                                             </div>
                                         )}
                                     </div>

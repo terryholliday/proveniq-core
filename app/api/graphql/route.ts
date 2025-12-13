@@ -2,6 +2,7 @@ import { createYoga, createSchema } from "graphql-yoga";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { resolvers, createContext } from "@/graphql/resolvers";
+import { NextRequest } from "next/server";
 
 // Read schema file
 let typeDefs: string;
@@ -42,6 +43,15 @@ const yoga = createYoga({
   },
 });
 
-export const GET = yoga;
-export const POST = yoga;
-export const OPTIONS = yoga;
+// Wrap yoga handlers for Next.js 15 compatibility
+export async function GET(request: NextRequest) {
+  return yoga.handle(request);
+}
+
+export async function POST(request: NextRequest) {
+  return yoga.handle(request);
+}
+
+export async function OPTIONS(request: NextRequest) {
+  return yoga.handle(request);
+}

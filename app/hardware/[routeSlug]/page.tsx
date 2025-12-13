@@ -2,9 +2,9 @@ import { PROVENIQ_DNA } from "@/lib/config";
 import { notFound } from "next/navigation";
 
 interface PageProps {
-    params: {
+    params: Promise<{
         routeSlug: string;
-    };
+    }>;
 }
 
 export function generateStaticParams() {
@@ -15,9 +15,10 @@ export function generateStaticParams() {
         }));
 }
 
-export default function HardwarePage({ params }: PageProps) {
+export default async function HardwarePage({ params }: PageProps) {
+    const { routeSlug } = await params;
     const hardware = PROVENIQ_DNA.products.find(
-        (p) => p.routeSlug === params.routeSlug && p.type === "Hardware"
+        (p) => p.routeSlug === routeSlug && p.type === "Hardware"
     );
 
     if (!hardware) {

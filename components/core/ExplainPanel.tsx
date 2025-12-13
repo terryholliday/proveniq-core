@@ -247,7 +247,7 @@ function FactorRow({ label, score }: { label: string, score: number }) {
                 <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${score}%` }}
-                    transition={{ duration: 1, ease: PROVENIQ_DNA.theme.motion.easeHeavy }}
+                    transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
                     className={`h-full ${barColor}`}
                 />
             </div>

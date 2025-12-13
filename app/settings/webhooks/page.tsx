@@ -23,11 +23,7 @@ const AVAILABLE_EVENTS = [
   "verification.failed",
 ];
 
-export default function WebhooksPage({ 
-  params 
-}: { 
-  params: { organizationId: string } 
-}) {
+export default function WebhooksPage() {
   const [webhooks, setWebhooks] = useState<Webhook[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -35,6 +31,9 @@ export default function WebhooksPage({
     url: "",
     events: [] as string[],
   });
+  
+  // In a real app, get organizationId from session/context
+  const organizationId = "default-org";
 
   useEffect(() => {
     fetchWebhooks();
@@ -42,7 +41,7 @@ export default function WebhooksPage({
 
   async function fetchWebhooks() {
     try {
-      const res = await fetch(`/api/webhooks?organizationId=${params.organizationId}`);
+      const res = await fetch(`/api/webhooks?organizationId=${organizationId}`);
       if (res.ok) {
         const data = await res.json();
         setWebhooks(data.data);
@@ -58,7 +57,7 @@ export default function WebhooksPage({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          organizationId: params.organizationId,
+          organizationId: organizationId,
           ...newWebhook,
         }),
       });
@@ -77,7 +76,7 @@ export default function WebhooksPage({
     if (!confirm("Are you sure you want to delete this webhook?")) return;
 
     try {
-      const res = await fetch(`/api/webhooks?id=${id}&organizationId=${params.organizationId}`, {
+      const res = await fetch(`/api/webhooks?id=${id}&organizationId=${organizationId}`, {
         method: "DELETE",
       });
 

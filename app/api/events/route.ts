@@ -1,9 +1,7 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-
-// Store active connections per user
-const connections = new Map<string, Set<ReadableStreamDefaultController>>();
+import { connections } from "@/lib/events/sse";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -53,35 +51,4 @@ export async function GET(req: NextRequest) {
       Connection: "keep-alive",
     },
   });
-}
-
-// Helper function to send events to a specific user
-export function sendEventToUser(userId: string, event: { type: string; data: unknown }) {
-  const userConnections = connections.get(userId);
-  if (!userConnections) return;
-
-  const message = JSON.stringify(event);
-  
-  for (const controller of userConnections) {
-    try {
-      controller.enqueue(`data: ${message}\n\n`);
-    } catch {
-      userConnections.delete(controller);
-    }
-  }
-}
-
-// Helper function to broadcast to all connected users
-export function broadcastEvent(event: { type: string; data: unknown }) {
-  const message = JSON.stringify(event);
-  
-  for (const [, userConnections] of connections) {
-    for (const controller of userConnections) {
-      try {
-        controller.enqueue(`data: ${message}\n\n`);
-      } catch {
-        userConnections.delete(controller);
-      }
-    }
-  }
 }

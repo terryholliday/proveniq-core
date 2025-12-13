@@ -27,14 +27,13 @@ interface Document {
   } | null;
 }
 
-export default function DocumentVaultPage({
-  params
-}: {
-  params: { organizationId: string }
-}) {
+export default function DocumentVaultPage() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  
+  // In a real app, get organizationId from session/context
+  const organizationId = "default-org";
 
   useEffect(() => {
     fetchDocuments();
@@ -42,7 +41,7 @@ export default function DocumentVaultPage({
 
   async function fetchDocuments() {
     try {
-      const res = await fetch(`/api/documents?organizationId=${params.organizationId}`);
+      const res = await fetch(`/api/documents?organizationId=${organizationId}`);
       if (res.ok) {
         const data = await res.json();
         setDocuments(data.data);
@@ -63,7 +62,7 @@ export default function DocumentVaultPage({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          organizationId: params.organizationId,
+          organizationId: organizationId,
           filename: file.name,
           contentType: file.type,
           size: file.size,

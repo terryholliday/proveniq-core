@@ -3,9 +3,14 @@
 import { useEffect, useRef } from "react";
 import { useSystemStore } from "@/lib/store";
 
+interface SystemState {
+    logout: () => void;
+    isAuthenticated: boolean;
+}
+
 export function DeadManSwitch({ timeoutMs = 60000 }: { timeoutMs?: number }) {
-    const logout = useSystemStore((state) => state.logout);
-    const isAuthenticated = useSystemStore((state) => state.isAuthenticated);
+    const logout = useSystemStore((state: SystemState) => state.logout);
+    const isAuthenticated = useSystemStore((state: SystemState) => state.isAuthenticated);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {

@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
   // Generate download URLs for each document (could be optimized)
   const docsWithUrls = await Promise.all(
-    documents.map(async (doc) => {
+    documents.map(async (doc: { key: string; id: string; name: string; contentType: string; size: number; status: string; createdAt: Date; userId: string; organizationId: string; user: { name: string | null; email: string } | null }) => {
       const url = await generateDownloadUrl(doc.key);
       return { ...doc, url };
     })
