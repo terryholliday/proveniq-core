@@ -1,9 +1,88 @@
-# PROVENIQ Core: Orchestration Layer
+# PROVENIQ Core: The Intelligence Layer
 
-The central nervous system of the Proveniq ecosystem.
+The central nervous system of the Proveniq ecosystem—where physical assets become verifiable truth.
 
 ## Overview
-Core handles identity, access control, and routing.
+
+Proveniq Core is the **single source of truth** for asset intelligence across the entire ecosystem. All sub-applications (HOME, ClaimsIQ, Capital, Bids) delegate their core intelligence operations to this centralized service.
+
+## Core Engines
+
+### 1. Provenance Engine
+Calculates provenance scores based on documentation completeness, verification status, and ownership history.
+
+**API**: `POST /api/v1/provenance/score`
+
+| Input | Impact |
+|-------|--------|
+| Photo count | +5 per photo (max 25) |
+| Receipt count | +15 per receipt (max 30) |
+| Warranty count | +10 per warranty (max 20) |
+| Genome verified | +15 bonus |
+| Ownership transfers | -3 per transfer (volatility penalty) |
+
+**Output**: Score (0-100), Rating (POOR/FAIR/GOOD/EXCELLENT), Claim Readiness, Fraud Flags
+
+### 2. Optical Genome Engine
+Generates unique visual fingerprints from asset photos using computer vision. The Genome is a 512-dimensional vector that uniquely identifies physical items.
+
+**API**: `POST /api/v1/genome/vectorize`
+
+**Capabilities**:
+- Generate genome vectors from photos
+- Compare genomes for similarity matching
+- Search genome index for duplicates/fraud detection
+
+### 3. Identity Engine
+Verifies asset identifiers against external authoritative sources.
+
+**API**: `POST /api/v1/identity/verify`
+
+| Asset Class | Verification Source |
+|-------------|---------------------|
+| Vehicles | NMVTIS, CARFAX |
+| Electronics | Apple GSX, Samsung Knox |
+| Watches | Chrono24, Brand APIs |
+| Jewelry | GIA, AGS |
+| Collectibles | PSA, CGC, NGC, BGS |
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     PROVENIQ CORE                           │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
+│  │ Provenance  │  │   Genome    │  │  Identity   │         │
+│  │   Engine    │  │   Engine    │  │   Engine    │         │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘         │
+│         │                │                │                 │
+│         └────────────────┼────────────────┘                 │
+│                          │                                  │
+│                    API Gateway                              │
+│              /api/v1/provenance/score                       │
+│              /api/v1/genome/vectorize                       │
+│              /api/v1/identity/verify                        │
+└─────────────────────────────────────────────────────────────┘
+              ▲                           ▲
+              │                           │
+    ┌─────────┴─────────┐       ┌────────┴────────┐
+    │     ClaimsIQ      │       │     Capital     │
+    │ (Pre-loss scoring)│       │(Collateral risk)│
+    └───────────────────┘       └─────────────────┘
+```
+
+## Strategic Value
+
+Proveniq Core operates in the **Truth Layer**—distinct from decisioning platforms (Shift, FRISS) and claims platforms (EvolutionIQ, CLARA).
+
+> "We don't compete with fraud detection—we eliminate the need for it through irrefutable pre-loss documentation."
+
+## Integration
+
+All Proveniq sub-apps integrate via:
+- **Environment Variable**: `PROVENIQ_CORE_URL` (default: `http://localhost:3000`)
+- **Fallback Logic**: Apps maintain local calculation as circuit breaker
+- **CORS**: Configured for cross-origin requests from all Proveniq frontends
 
 ## DNA Verification
 This document corresponds to `docSlug: 'proveniq-core'`.
