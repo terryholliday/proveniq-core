@@ -45,6 +45,25 @@ const securityHeaders = [
   },
 ];
 
+const corsHeaders = [
+  {
+    key: "Access-Control-Allow-Origin",
+    value: process.env.ALLOWED_ORIGINS || "http://localhost:5173,http://localhost:3001",
+  },
+  {
+    key: "Access-Control-Allow-Methods",
+    value: "GET, POST, PUT, DELETE, OPTIONS",
+  },
+  {
+    key: "Access-Control-Allow-Headers",
+    value: "Content-Type, Authorization, X-Requested-With",
+  },
+  {
+    key: "Access-Control-Allow-Credentials",
+    value: "true",
+  },
+];
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   async headers() {
@@ -52,6 +71,10 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: securityHeaders,
+      },
+      {
+        source: "/api/:path*",
+        headers: corsHeaders,
       },
     ];
   },

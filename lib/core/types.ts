@@ -10,7 +10,7 @@
 
 import { CorePolicy, Decision, ScoreBucket } from "./policy.types";
 
-export { CorePolicy, Decision, ScoreBucket };
+export type { CorePolicy, Decision, ScoreBucket };
 
 // Alias for backward compatibility during refactor
 export type Policy = CorePolicy;

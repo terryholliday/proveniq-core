@@ -15,6 +15,7 @@ export interface ProveniqConfig {
   theme: {
     fonts: { ui: string; data: string };
     colors: { bg: string; panel: string; accent: string; success: string };
+    motion?: { easeHeavy: number[] };
   };
 }
 
@@ -31,6 +32,7 @@ export const PROVENIQ_DNA: ProveniqConfig = {
   ],
   theme: {
     fonts: { ui: "var(--font-inter)", data: "var(--font-jetbrains)" },
-    colors: { bg: "#0f172a", panel: "#1e293b", accent: "#0ea5e9", success: "#10b981" }
+    colors: { bg: "#0f172a", panel: "#1e293b", accent: "#0ea5e9", success: "#10b981" },
+    motion: { easeHeavy: [0.22, 1, 0.36, 1] }
   }
 } as const;

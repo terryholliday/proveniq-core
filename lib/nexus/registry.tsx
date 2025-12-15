@@ -25,7 +25,7 @@ const OrderDepth = dynamic(() => import('@/components/charts/OrderDepth').then(m
 const AuditLogWidget = dynamic(() => import('@/components/visualizations/AuditLog').then(mod => mod.AuditLog), {
     loading: () => <SkeletonWidget label="Audit Log" />,
 });
-const ConstellationWidget = dynamic(() => import('@/components/visualizations/Constellation').then(mod => mod.Constellation), {
+const ConstellationWidget = dynamic(() => import('@/components/visualizations/Constellation').then(mod => mod.ConstellationView), {
     loading: () => <SkeletonWidget label="Holodeck" />,
 });
 

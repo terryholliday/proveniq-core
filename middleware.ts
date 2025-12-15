@@ -26,8 +26,37 @@ function isApiPath(pathname: string): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Handle CORS preflight requests for API routes
+  if (isApiPath(pathname) && request.method === "OPTIONS") {
+    const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:5173,http://localhost:3001").split(",");
+    const origin = request.headers.get("origin") || "";
+    
+    const response = new NextResponse(null, { status: 204 });
+    
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes("*")) {
+      response.headers.set("Access-Control-Allow-Origin", origin);
+    }
+    response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+    response.headers.set("Access-Control-Allow-Credentials", "true");
+    response.headers.set("Access-Control-Max-Age", "86400");
+    
+    return response;
+  }
+
   // Security headers for all responses
   const response = NextResponse.next();
+  
+  // Add CORS headers for API routes
+  if (isApiPath(pathname)) {
+    const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:5173,http://localhost:3001").split(",");
+    const origin = request.headers.get("origin") || "";
+    
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes("*")) {
+      response.headers.set("Access-Control-Allow-Origin", origin);
+    }
+    response.headers.set("Access-Control-Allow-Credentials", "true");
+  }
   
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("X-Content-Type-Options", "nosniff");

@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import { motion, Variants, useReducedMotion } from "framer-motion";
 import { PROVENIQ_DNA } from "@/lib/config";
 import {
-  FLYWHEEL_RADIUS,
+  FLYWHEEL,
   NODE_COUNT,
-  ROTATION_DURATION,
   PACKET_STAGGER_DELAY,
   EASE_HEAVY,
 } from "@/lib/physics";
@@ -90,11 +89,11 @@ export function Flywheel({
     setMounted(true);
   }, []);
 
-  const nodePositions = calculateNodePositions(NODE_COUNT, FLYWHEEL_RADIUS);
+  const nodePositions = calculateNodePositions(NODE_COUNT, FLYWHEEL.radius);
   const shouldRotate = autoRotate && !prefersReducedMotion;
   const shouldAnimatePackets = showPackets && !prefersReducedMotion;
 
-  const viewBoxSize = FLYWHEEL_RADIUS * 2 + 100;
+  const viewBoxSize = FLYWHEEL.radius * 2 + 100;
   const center = viewBoxSize / 2;
 
   if (!mounted) {
@@ -137,7 +136,7 @@ export function Flywheel({
           transition={
             shouldRotate
               ? {
-                  duration: ROTATION_DURATION,
+                  duration: FLYWHEEL.duration,
                   repeat: Infinity,
                   ease: "linear",
                 }
@@ -148,7 +147,7 @@ export function Flywheel({
           <circle
             cx={center}
             cy={center}
-            r={FLYWHEEL_RADIUS}
+            r={FLYWHEEL.radius}
             fill="none"
             stroke="currentColor"
             strokeWidth="1"

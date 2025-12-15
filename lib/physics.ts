@@ -1,6 +1,19 @@
-export const FLYWHEEL_RADIUS = 240 as const;
+export const BUDGET = {
+  flywheel: {
+    maxParticles: 12,
+  },
+  particles: {
+    max: 50,
+  }
+} as const;
+
+export const FLYWHEEL = {
+  radius: 240,
+  duration: 60,
+  rotation: 360,
+} as const;
+
 export const NODE_COUNT = 7 as const;
-export const ROTATION_DURATION = 60 as const;
 export const PACKET_STAGGER_DELAY = 0.5 as const;
 export const EASE_HEAVY: [number, number, number, number] = [0.22, 1, 0.36, 1];
 

@@ -667,4 +667,4 @@ if (require.main === module) {
     });
 }
 
-export { LatencyStressTester, LATENCY_THRESHOLDS, TEST_ENDPOINTS };
+export { LatencyStressTester, TEST_ENDPOINTS };
