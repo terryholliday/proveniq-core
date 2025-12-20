@@ -36,7 +36,7 @@ export function SafeAsset({
       className={className}
       width={width}
       height={height}
-      aria-label="Proveniq Locker cutaway diagram"
+      aria-label="PROVENIQ Lockers cutaway diagram"
     >
       <defs>
         <linearGradient id="safe-body" x1="0%" y1="0%" x2="100%" y2="100%">
