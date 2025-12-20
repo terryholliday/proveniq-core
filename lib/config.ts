@@ -1,4 +1,4 @@
-export type ProductRole = "Ingest" | "Verify" | "Adjudicate" | "Liquidate" | "Orchestrate" | "Finance" | "Secure" | "Track";
+export type ProductRole = "Preserve" | "Ingest" | "Verify" | "Adjudicate" | "Liquidate" | "Orchestrate" | "Finance" | "Secure" | "Track";
 export type ProductCategory = "Software" | "Infrastructure" | "Hardware";
 
 export interface ProductModule {
@@ -21,14 +21,15 @@ export interface ProveniqConfig {
 
 export const PROVENIQ_DNA: ProveniqConfig = {
   products: [
+    { id: "origins", label: "Origins", type: "Software", role: "Preserve", routeSlug: "origins", docSlug: "proveniq-origins" },
     { id: "home", label: "Home", type: "Software", role: "Ingest", routeSlug: "home", docSlug: "proveniq-home" },
     { id: "ledger", label: "Ledger", type: "Software", role: "Verify", routeSlug: "ledger", docSlug: "proveniq-ledger" },
     { id: "claims-iq", label: "ClaimsIQ", type: "Software", role: "Adjudicate", routeSlug: "claims-iq", docSlug: "proveniq-claims-iq" },
     { id: "bids", label: "Bids", type: "Software", role: "Liquidate", routeSlug: "bids", docSlug: "proveniq-bids" },
     { id: "core", label: "Core", type: "Infrastructure", role: "Orchestrate", routeSlug: "core", docSlug: "proveniq-core" },
     { id: "capital", label: "Capital", type: "Infrastructure", role: "Finance", routeSlug: "capital", docSlug: "proveniq-capital" },
-    { id: "locker", label: "Lockers", type: "Hardware", role: "Secure", routeSlug: "locker", docSlug: "anti-fraud-locker" },
-    { id: "smart-tag", label: "SmartTags", type: "Hardware", role: "Track", routeSlug: "smart-tag", docSlug: "smart-tag-system" }
+    { id: "lockers", label: "Lockers", type: "Hardware", role: "Secure", routeSlug: "lockers", docSlug: "proveniq-lockers" },
+    { id: "smart-tags", label: "SmartTags", type: "Hardware", role: "Track", routeSlug: "smart-tags", docSlug: "proveniq-smart-tags" }
   ],
   theme: {
     fonts: { ui: "var(--font-inter)", data: "var(--font-jetbrains)" },
