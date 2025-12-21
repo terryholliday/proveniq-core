@@ -1,4 +1,4 @@
-export type ProductRole = "Preserve" | "Ingest" | "Verify" | "Adjudicate" | "Liquidate" | "Orchestrate" | "Finance" | "Secure" | "Track";
+export type ProductRole = "Preserve" | "Ingest" | "Verify" | "Adjudicate" | "Liquidate" | "Orchestrate" | "Finance" | "Secure" | "Track" | "Evidence";
 export type ProductCategory = "Software" | "Infrastructure" | "Hardware";
 
 export interface ProductModule {
@@ -23,6 +23,7 @@ export const PROVENIQ_DNA: ProveniqConfig = {
   products: [
     { id: "origins", label: "Origins", type: "Software", role: "Preserve", routeSlug: "origins", docSlug: "proveniq-origins" },
     { id: "home", label: "Home", type: "Software", role: "Ingest", routeSlug: "home", docSlug: "proveniq-home" },
+    { id: "properties", label: "Properties", type: "Software", role: "Evidence", routeSlug: "properties", docSlug: "proveniq-properties" },
     { id: "ledger", label: "Ledger", type: "Software", role: "Verify", routeSlug: "ledger", docSlug: "proveniq-ledger" },
     { id: "claims-iq", label: "ClaimsIQ", type: "Software", role: "Adjudicate", routeSlug: "claims-iq", docSlug: "proveniq-claims-iq" },
     { id: "bids", label: "Bids", type: "Software", role: "Liquidate", routeSlug: "bids", docSlug: "proveniq-bids" },
