@@ -545,6 +545,20 @@ async def inspection_certificate(inspection_id: UUID, db: AsyncSession = Depends
     return StreamingResponse(buffer, media_type="application/pdf", headers=headers)
 
 
+# -----------------------------------------------------------------------------
+# Include new routers
+# -----------------------------------------------------------------------------
+from app.routers.valuation import router as valuation_router
+from app.routers.fraud import router as fraud_router
+from app.routers.assets import router as assets_router
+from app.routers.gateway import router as gateway_router
+
+app.include_router(valuation_router)
+app.include_router(fraud_router)
+app.include_router(assets_router)
+app.include_router(gateway_router)
+
+
 @app.get("/")
 async def root():
     return {"service": settings.app_name, "version": "1.0.0"}
