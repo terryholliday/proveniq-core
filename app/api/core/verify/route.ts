@@ -3,6 +3,7 @@ import { evaluateAsset } from "@/lib/core/decision";
 import { CORE_POLICIES } from "@/lib/core/policies";
 import { LEDGER } from "@/lib/core/ledger";
 import { AssetInputs } from "@/lib/core/types";
+import { parseAssetId, parseAssetInputs } from "@/lib/core/validation";
 
 /**
  * POST /api/core/verify
@@ -13,28 +14,53 @@ import { AssetInputs } from "@/lib/core/types";
  */
 export async function POST(req: NextRequest) {
     try {
-        const body = await req.json();
+        let body: unknown;
+        try {
+            body = await req.json();
+        } catch (error) {
+            console.error(error);
+            return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+        }
+
+        if (!body || typeof body !== "object") {
+            return NextResponse.json({ error: "Request body must be an object" }, { status: 400 });
+        }
+
         const { assetId, inputs, policyId } = body as {
             assetId: string;
             inputs: AssetInputs;
             policyId?: string;
         };
 
-        if (!assetId || !inputs) {
-            return NextResponse.json({ error: "Missing assetId or inputs" }, { status: 400 });
+        const assetIdResult = parseAssetId(assetId);
+        if (!assetIdResult.ok) {
+            return NextResponse.json({ error: assetIdResult.error }, { status: 400 });
+        }
+
+        const inputsResult = parseAssetInputs(inputs);
+        if (!inputsResult.ok) {
+            return NextResponse.json(
+                { error: inputsResult.error, details: inputsResult.details },
+                { status: 400 }
+            );
+        }
+
+        if (policyId !== undefined && (typeof policyId !== "string" || !policyId.trim())) {
+            return NextResponse.json({ error: "policyId must be a non-empty string" }, { status: 400 });
         }
 
         // 1. Select Policy (Default to Insurer if missing)
-        const selectedPolicy = policyId ? CORE_POLICIES[policyId] : CORE_POLICIES["insurer_policy_v1"];
+        const policyKey = policyId?.trim();
+        const selectedPolicy = policyKey ? CORE_POLICIES[policyKey] : CORE_POLICIES["insurer_policy_v1"];
         if (!selectedPolicy) {
             return NextResponse.json({ error: "Invalid Policy ID" }, { status: 400 });
         }
 
         // 2. Log Ingestion Event (if not exists)
         // In a real system, this might be separate, but here we ensure the asset exists in ledger.
-        const history = LEDGER.getAssetHistory(assetId);
+        const history = LEDGER.getAssetHistory(assetIdResult.data);
         if (history.length === 0) {
-            LEDGER.logEvent('ASSET_CREATED', assetId, 'SYS:API_GATEWAY', { note: "Auto-created on verify" });
+            LEDGER.logEvent('ASSET_CREATED', assetIdResult.data, 'SYS:API_GATEWAY', { note: "Auto-created on verify" });
         }
 
         // 3. Compute Decision (Deterministic)
@@ -56,14 +82,15 @@ export async function POST(req: NextRequest) {
 
         // Correct Flow:
         // 1. Evaluate (Logic)
-        const analysis = evaluateAsset(assetId, inputs, selectedPolicy);
+        const analysis = evaluateAsset(assetIdResult.data, inputsResult.data, selectedPolicy);
 
         // 2. Log Result (Persistence)
         // Store Full Snapshot for Replay/Audit
-        const event = LEDGER.logEvent('DECISION_RECORDED', assetId, 'CORE_KERNEL', {
+        const event = LEDGER.logEvent('DECISION_RECORDED', assetIdResult.data, 'CORE_KERNEL', {
             // Replay Inputs
-            inputs,
-            policy_id: policyId,
+            inputs: inputsResult.data,
+            policy_id: selectedPolicy.id,
+            policy_key: policyKey ?? selectedPolicy.id,
 
             // Result Snapshot
             analysis: {
