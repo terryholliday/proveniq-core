@@ -8,10 +8,12 @@ const PUBLIC_PATHS = [
   "/auth/signup",
   "/auth/error",
   "/api/auth",
+  "/api/health",
+  "/api/core",
   "/bible",
 ];
 
-const API_PATHS = ["/api/v1"];
+const API_PATHS = ["/api/v1", "/api/core", "/api/health"];
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some(
