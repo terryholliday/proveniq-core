@@ -171,10 +171,10 @@ export async function generateRegistrationOptions(
   await storeChallenge(challenge, 'REGISTRATION', userId);
 
   // Exclude existing credentials to prevent re-registration
-  const excludeCredentials = user.passkeys.map((pk) => ({
+  const excludeCredentials = user.passkeys.map((pk: { credentialId: string; transports: string[] }) => ({
     id: pk.credentialId,
     type: 'public-key' as const,
-    transports: pk.transports as any[],
+    transports: pk.transports as AuthenticatorTransport[],
   }));
 
   return {
