@@ -9,6 +9,16 @@ export interface AggregatedState {
     custody_holder: string;
     owner_subject: string;
     timeline: Array<{ occurred_at: string, title: string, description: string, actor: string }>;
+    claims: {
+        status: "NONE" | "OPEN" | "DECIDED" | "AUTHORIZED" | "PAID" | "FAILED";
+        claim_id?: string;
+        decision?: "PAY" | "DENY" | "REVIEW";
+        amount_micros?: string;
+        currency?: string;
+        decision_time?: string;
+        payout_time?: string;
+        last_event_id?: string;
+    };
 }
 
 export const INITIAL_STATE: AggregatedState = {
@@ -18,11 +28,13 @@ export const INITIAL_STATE: AggregatedState = {
     custody_status: "CUSTODY",
     custody_holder: "ORIGIN",
     owner_subject: "UNKNOWN",
-    timeline: []
+    timeline: [],
+    claims: { status: "NONE" }
 };
 
 export function reduceState(events: LedgerEvent[]): AggregatedState {
-    const state = { ...INITIAL_STATE };
+    const state = { ...INITIAL_STATE, claims: { ...INITIAL_STATE.claims } };
+    state.timeline = []; // Reset timeline to avoid dupes if re-reducing
 
     // Sort by time
     const sorted = [...events].sort((a, b) =>
@@ -53,8 +65,33 @@ export function reduceState(events: LedgerEvent[]): AggregatedState {
                 state.custody_status = 'TRANSIT';
                 state.custody_holder = event.payload.custodian_id || "Unknown Driver";
                 break;
-            case 'SERVICE_WORK_ORDER_CREATED':
-                // Maybe affects status
+
+            // CLAIM LIFECYCLE
+            case 'CLAIM_OPENED':
+                state.claims.status = 'OPEN';
+                state.claims.claim_id = event.payload.claim_id;
+                state.claims.last_event_id = event.event_id || event.id; // Handle mock/real
+                break;
+            case 'CLAIM_DECISION_RECORDED':
+                state.claims.status = 'DECIDED';
+                state.claims.decision = event.payload.decision;
+                state.claims.amount_micros = event.payload.amount_micros;
+                state.claims.currency = event.payload.currency;
+                state.claims.decision_time = event.occurred_at;
+                state.claims.last_event_id = event.event_id || event.id;
+                break;
+            case 'CLAIM_PAYOUT_AUTHORIZED':
+                state.claims.status = 'AUTHORIZED';
+                state.claims.last_event_id = event.event_id || event.id;
+                break;
+            case 'CAPITAL_PAYOUT_EXECUTED':
+                state.claims.status = 'PAID';
+                state.claims.payout_time = event.occurred_at;
+                state.claims.last_event_id = event.event_id || event.id;
+                break;
+            case 'CAPITAL_PAYOUT_FAILED':
+                state.claims.status = 'FAILED';
+                state.claims.last_event_id = event.event_id || event.id;
                 break;
         }
     }
