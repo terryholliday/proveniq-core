@@ -1,0 +1,429 @@
+# Proveniq GraphQL Schema
+
+scalar DateTime
+scalar JSON
+
+# ============================================
+# USER & AUTH
+# ============================================
+
+type User {
+  id: ID!
+  email: String!
+  name: String
+  image: String
+  role: Role!
+  createdAt: DateTime!
+  organizations: [OrganizationMember!]!
+}
+
+enum Role {
+  USER
+  ADMIN
+  AUDITOR
+  INVESTOR
+}
+
+# ============================================
+# ORGANIZATION
+# ============================================
+
+type Organization {
+  id: ID!
+  name: String!
+  slug: String!
+  createdAt: DateTime!
+  members: [OrganizationMember!]!
+  assets: [Asset!]!
+  apiKeys: [ApiKey!]!
+}
+
+type OrganizationMember {
+  id: ID!
+  user: User!
+  organization: Organization!
+  role: OrgRole!
+  createdAt: DateTime!
+}
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+# ============================================
+# ASSETS & VERIFICATION
+# ============================================
+
+type Asset {
+  id: ID!
+  externalId: String
+  name: String!
+  category: String!
+  status: AssetStatus!
+  metadata: JSON
+  organization: Organization!
+  verifications: [Verification!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum AssetStatus {
+  PENDING
+  VERIFIED
+  FLAGGED
+  ARCHIVED
+}
+
+type Verification {
+  id: ID!
+  asset: Asset!
+  type: VerificationType!
+  status: VerificationStatus!
+  confidence: Float
+  evidenceHash: String
+  metadata: JSON
+  requestedAt: DateTime!
+  completedAt: DateTime
+}
+
+enum VerificationType {
+  OWNERSHIP
+  CONDITION
+  LOCATION
+  EXISTENCE
+}
+
+enum VerificationStatus {
+  PENDING
+  PROCESSING
+  VERIFIED
+  FAILED
+  EXPIRED
+}
+
+# ============================================
+# API KEYS
+# ============================================
+
+type ApiKey {
+  id: ID!
+  name: String!
+  keyPrefix: String!
+  scopes: [String!]!
+  lastUsedAt: DateTime
+  expiresAt: DateTime
+  createdAt: DateTime!
+  revokedAt: DateTime
+}
+
+# ============================================
+# DOCUMENTS
+# ============================================
+
+type Document {
+  id: ID!
+  name: String!
+  contentType: String!
+  size: Int!
+  status: DocumentStatus!
+  url: String
+  organization: Organization!
+  uploadedBy: User
+  createdAt: DateTime!
+}
+
+enum DocumentStatus {
+  PENDING
+  UPLOADED
+  PROCESSING
+  READY
+  FAILED
+}
+
+# ============================================
+# NOTIFICATIONS
+# ============================================
+
+type Notification {
+  id: ID!
+  type: NotificationType!
+  title: String!
+  message: String!
+  metadata: JSON
+  readAt: DateTime
+  createdAt: DateTime!
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  VERIFICATION
+  SYSTEM
+}
+
+# ============================================
+# AUDIT LOGS
+# ============================================
+
+type AuditLog {
+  id: ID!
+  action: String!
+  entityType: String!
+  entityId: String
+  metadata: JSON
+  ipAddress: String
+  user: User
+  organization: Organization
+  createdAt: DateTime!
+}
+
+# ============================================
+# QUERIES
+# ============================================
+
+type Query {
+  # User
+  me: User
+  user(id: ID!): User
+
+  # Organizations
+  organizations: [Organization!]!
+  organization(id: ID!): Organization
+  organizationBySlug(slug: String!): Organization
+
+  # Assets
+  assets(organizationId: ID!, status: AssetStatus, limit: Int, offset: Int): AssetConnection!
+  asset(id: ID!): Asset
+
+  # Verifications
+  verifications(assetId: ID!, limit: Int, offset: Int): VerificationConnection!
+  verification(id: ID!): Verification
+
+  # Documents
+  documents(organizationId: ID!, limit: Int, offset: Int): DocumentConnection!
+  document(id: ID!): Document
+
+  # API Keys
+  apiKeys(organizationId: ID): [ApiKey!]!
+  apiKey(id: ID!): ApiKey
+
+  # Notifications
+  notifications(unreadOnly: Boolean, limit: Int, offset: Int): NotificationConnection!
+  unreadNotificationCount: Int!
+
+  # Audit Logs
+  auditLogs(
+    organizationId: ID
+    entityType: String
+    action: String
+    limit: Int
+    offset: Int
+  ): AuditLogConnection!
+
+  # Search
+  search(query: String!, types: [String!], limit: Int): [SearchResult!]!
+}
+
+# ============================================
+# MUTATIONS
+# ============================================
+
+type Mutation {
+  # Organizations
+  createOrganization(input: CreateOrganizationInput!): Organization!
+  updateOrganization(id: ID!, input: UpdateOrganizationInput!): Organization!
+  deleteOrganization(id: ID!): Boolean!
+  inviteMember(organizationId: ID!, email: String!, role: OrgRole!): OrganizationMember!
+  removeMember(organizationId: ID!, userId: ID!): Boolean!
+  updateMemberRole(organizationId: ID!, userId: ID!, role: OrgRole!): OrganizationMember!
+
+  # Assets
+  createAsset(input: CreateAssetInput!): Asset!
+  updateAsset(id: ID!, input: UpdateAssetInput!): Asset!
+  deleteAsset(id: ID!): Boolean!
+
+  # Verifications
+  requestVerification(assetId: ID!, type: VerificationType!): Verification!
+
+  # Documents
+  initiateUpload(input: InitiateUploadInput!): UploadResponse!
+  confirmUpload(id: ID!): Document!
+  deleteDocument(id: ID!): Boolean!
+
+  # API Keys
+  createApiKey(input: CreateApiKeyInput!): ApiKeyWithSecret!
+  revokeApiKey(id: ID!): Boolean!
+  deleteApiKey(id: ID!): Boolean!
+
+  # Notifications
+  markNotificationRead(id: ID!): Notification!
+  markAllNotificationsRead: Int!
+  deleteNotification(id: ID!): Boolean!
+
+  # E-Signature
+  requestSignature(input: SignatureRequestInput!): SignatureRequestResponse!
+  cancelSignatureRequest(envelopeId: ID!, reason: String!): Boolean!
+}
+
+# ============================================
+# INPUT TYPES
+# ============================================
+
+input CreateOrganizationInput {
+  name: String!
+  slug: String!
+}
+
+input UpdateOrganizationInput {
+  name: String
+}
+
+input CreateAssetInput {
+  organizationId: ID!
+  name: String!
+  category: String!
+  externalId: String
+  metadata: JSON
+}
+
+input UpdateAssetInput {
+  name: String
+  category: String
+  status: AssetStatus
+  metadata: JSON
+}
+
+input InitiateUploadInput {
+  organizationId: ID!
+  name: String!
+  contentType: String!
+  size: Int!
+}
+
+input CreateApiKeyInput {
+  name: String!
+  scopes: [String!]!
+  organizationId: ID
+  expiresInDays: Int
+}
+
+input SignatureRequestInput {
+  documentId: ID!
+  organizationId: ID!
+  recipients: [RecipientInput!]!
+  emailSubject: String
+  emailBody: String
+}
+
+input RecipientInput {
+  email: String!
+  name: String!
+}
+
+# ============================================
+# RESPONSE TYPES
+# ============================================
+
+type ApiKeyWithSecret {
+  id: ID!
+  name: String!
+  keyPrefix: String!
+  scopes: [String!]!
+  expiresAt: DateTime
+  createdAt: DateTime!
+  secret: String!
+}
+
+type UploadResponse {
+  id: ID!
+  uploadUrl: String!
+  expiresAt: DateTime!
+}
+
+type SignatureRequestResponse {
+  id: ID!
+  envelopeId: String!
+  status: String!
+  signingUrls: [SigningUrl!]!
+}
+
+type SigningUrl {
+  email: String!
+  url: String!
+}
+
+type SearchResult {
+  id: ID!
+  type: String!
+  title: String!
+  description: String
+  url: String!
+  score: Float!
+}
+
+# ============================================
+# PAGINATION
+# ============================================
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+  totalCount: Int!
+}
+
+type AssetConnection {
+  edges: [AssetEdge!]!
+  pageInfo: PageInfo!
+}
+
+type AssetEdge {
+  node: Asset!
+  cursor: String!
+}
+
+type VerificationConnection {
+  edges: [VerificationEdge!]!
+  pageInfo: PageInfo!
+}
+
+type VerificationEdge {
+  node: Verification!
+  cursor: String!
+}
+
+type DocumentConnection {
+  edges: [DocumentEdge!]!
+  pageInfo: PageInfo!
+}
+
+type DocumentEdge {
+  node: Document!
+  cursor: String!
+}
+
+type NotificationConnection {
+  edges: [NotificationEdge!]!
+  pageInfo: PageInfo!
+}
+
+type NotificationEdge {
+  node: Notification!
+  cursor: String!
+}
+
+type AuditLogConnection {
+  edges: [AuditLogEdge!]!
+  pageInfo: PageInfo!
+}
+
+type AuditLogEdge {
+  node: AuditLog!
+  cursor: String!
+}

@@ -1,0 +1,74 @@
+%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#1a1a2e', 'primaryTextColor': '#eee', 'primaryBorderColor': '#4a9eff', 'lineColor': '#4a9eff', 'secondaryColor': '#16213e', 'tertiaryColor': '#0f3460'}}}%%
+
+graph TB
+    subgraph EDGE["☁️ EDGE LAYER"]
+        CDN["🌐 CDN / Load Balancer<br/>Vercel Edge Network"]
+    end
+
+    subgraph APPLICATIONS["📱 APPLICATION LAYER"]
+        PORTAL["🖥️ Portal<br/>Customer Dashboard"]
+        MOBILE["📱 Mobile<br/>Field Verification"]
+        VERIFY["✅ Verify<br/>Verification Workflows"]
+        INGEST["📥 Ingest<br/>Data Pipelines"]
+    end
+
+    subgraph CORE_PLATFORM["🧠 CORE PLATFORM"]
+        CORE["⚡ PROVENIQ CORE<br/>━━━━━━━━━━━━━━━━━━━<br/>Authentication<br/>Authorization (RBAC)<br/>Multi-Tenancy<br/>Audit Logging<br/>Data Models<br/>API Gateway"]
+    end
+
+    subgraph SERVICES["⚙️ SERVICE LAYER"]
+        ANALYTICS["📊 Analytics<br/>BI & Reporting"]
+        INTEGRATIONS["🔌 Integrations<br/>DocuSign, Plaid, S3"]
+    end
+
+    subgraph DATA["💾 DATA LAYER"]
+        RDS[("🗄️ PostgreSQL<br/>AWS RDS<br/>━━━━━━━━━━<br/>Primary: Write<br/>Replica: Read")]
+        S3["📦 S3<br/>Document Storage"]
+        REDIS["⚡ Redis<br/>Cache & Sessions"]
+    end
+
+    %% Edge connections
+    CDN --> PORTAL
+    CDN --> MOBILE
+    CDN --> VERIFY
+    CDN --> INGEST
+
+    %% Application to Core
+    PORTAL --> CORE
+    MOBILE --> CORE
+    VERIFY --> CORE
+    INGEST --> CORE
+
+    %% Core to Services
+    CORE --> ANALYTICS
+    CORE --> INTEGRATIONS
+
+    %% Service dependencies
+    ANALYTICS --> CORE
+    INTEGRATIONS --> CORE
+
+    %% Portal uses Analytics
+    PORTAL -.-> ANALYTICS
+
+    %% Verify/Ingest use Integrations
+    VERIFY -.-> INTEGRATIONS
+    INGEST -.-> INTEGRATIONS
+
+    %% Data layer connections
+    CORE --> RDS
+    CORE --> REDIS
+    ANALYTICS --> RDS
+    INTEGRATIONS --> S3
+
+    %% Styling
+    classDef core fill:#4a9eff,stroke:#fff,stroke-width:3px,color:#000
+    classDef app fill:#16213e,stroke:#4a9eff,stroke-width:2px,color:#fff
+    classDef service fill:#0f3460,stroke:#4a9eff,stroke-width:1px,color:#fff
+    classDef data fill:#1a1a2e,stroke:#4a9eff,stroke-width:2px,color:#fff
+    classDef edge fill:#2d3436,stroke:#4a9eff,stroke-width:1px,color:#fff
+
+    class CORE core
+    class PORTAL,MOBILE,VERIFY,INGEST app
+    class ANALYTICS,INTEGRATIONS service
+    class RDS,S3,REDIS data
+    class CDN edge
