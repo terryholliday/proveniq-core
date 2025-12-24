@@ -1,0 +1,23 @@
+[
+    {
+        "event_type": "ANCHOR_REGISTERED",
+        "occurred_at": "2024-01-01T10:00:00Z",
+        "source": "anchors",
+        "asset_id": "ASSET-MOCK-1",
+        "schema_version": "1.0.0",
+        "payload": {
+            "hardware_id": "HW-1"
+        }
+    },
+    {
+        "event_type": "PROTECT_POLICY_BOUND",
+        "occurred_at": "2024-01-02T10:00:00Z",
+        "source": "protect",
+        "asset_id": "ASSET-MOCK-1",
+        "schema_version": "1.0.0",
+        "payload": {
+            "coverage_amount": 50000,
+            "currency": "USD"
+        }
+    }
+]
