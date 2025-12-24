@@ -58,6 +58,12 @@ class Settings(BaseSettings):
     presign_ttl_seconds: int = 300
     max_upload_size_mb: int = 50
 
+    cloud_mct_base_url: Optional[str] = None
+    cloud_mct_api_key: Optional[str] = None
+    cloud_mct_project_id: Optional[str] = None
+    cloud_mct_timeout_seconds: int = 30
+    cloud_mct_verify_ssl: bool = True
+
 
 settings = Settings()
 
