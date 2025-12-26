@@ -9,6 +9,7 @@ import { marketRoutes } from './routes/market';
 import { brandRoutes } from './routes/brand';
 import { riskRoutes } from './routes/risk';
 import { anomalyRoutes } from './routes/anomaly';
+import { eventRoutes } from './routes/events';
 import { errorHandler } from './errors/errors';
 import { registerGatewayMiddleware, checkServiceHealth } from './services';
 import dotenv from 'dotenv';
@@ -67,6 +68,7 @@ server.register(marketRoutes, { prefix: '/api/v1/market' }); // P1
 server.register(brandRoutes, { prefix: '/api/v1/brand' }); // P1
 server.register(riskRoutes, { prefix: '/api/v1/risk' }); // Phase 3
 server.register(anomalyRoutes, { prefix: '/api/v1/anomaly' }); // Phase 3
+server.register(eventRoutes, { prefix: '/api/v1/events' }); // Phase 3 - Event Bus
 
 const PORT = parseInt(process.env.PORT || "8000");
 
