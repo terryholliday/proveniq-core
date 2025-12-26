@@ -6,6 +6,7 @@ import { fraudRoutes } from './routes/fraud';
 import { registryRoutes } from './routes/registry';
 import { conditionRoutes } from './routes/condition';
 import { marketRoutes } from './routes/market';
+import { brandRoutes } from './routes/brand';
 import { errorHandler } from './errors/errors';
 import { registerGatewayMiddleware, checkServiceHealth } from './services';
 import dotenv from 'dotenv';
@@ -61,6 +62,7 @@ server.register(fraudRoutes, { prefix: '/api/v1/fraud' });
 server.register(registryRoutes, { prefix: '/api/v1/registry' });
 server.register(conditionRoutes, { prefix: '/api/v1/condition' }); // P1
 server.register(marketRoutes, { prefix: '/api/v1/market' }); // P1
+server.register(brandRoutes, { prefix: '/api/v1/brand' }); // P1
 
 const PORT = parseInt(process.env.PORT || "8000");
 
