@@ -4,6 +4,8 @@ import { assetRoutes } from './routes/assets';
 import { valuationRoutes } from './routes/valuations';
 import { fraudRoutes } from './routes/fraud';
 import { registryRoutes } from './routes/registry';
+import { conditionRoutes } from './routes/condition';
+import { marketRoutes } from './routes/market';
 import { errorHandler } from './errors/errors';
 import { registerGatewayMiddleware, checkServiceHealth } from './services';
 import dotenv from 'dotenv';
@@ -57,6 +59,8 @@ server.register(assetRoutes, { prefix: '/api/v1/assets' });
 server.register(valuationRoutes, { prefix: '/api/v1/valuations' });
 server.register(fraudRoutes, { prefix: '/api/v1/fraud' });
 server.register(registryRoutes, { prefix: '/api/v1/registry' });
+server.register(conditionRoutes, { prefix: '/api/v1/condition' }); // P1
+server.register(marketRoutes, { prefix: '/api/v1/market' }); // P1
 
 const PORT = parseInt(process.env.PORT || "8000");
 
