@@ -93,7 +93,7 @@ export const PROVENIQ_DNA: ProveniqConfig = {
     // ═══════════════════════════════════════════════════════════════════════════
     {
       id: "locker",
-      label: "Lockers",
+      label: "Locker",
       type: "Hardware",
       role: "Secure",
       routeSlug: "locker",

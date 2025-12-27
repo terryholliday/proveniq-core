@@ -55,4 +55,3 @@ hosting/.cache
 
 # Vercel
 .vercel
-.env*.local

@@ -68,11 +68,11 @@ export async function getUsageStats(
   });
 
   const totalRequests = usage.length;
-  const successfulRequests = usage.filter((u: { status: number }) => u.status < 400).length;
+  const successfulRequests = usage.filter((u) => u.status < 400).length;
   const failedRequests = totalRequests - successfulRequests;
   const avgLatencyMs =
     totalRequests > 0
-      ? Math.round(usage.reduce((sum: number, u: { latencyMs: number }) => sum + u.latencyMs, 0) / totalRequests)
+      ? Math.round(usage.reduce((sum, u) => sum + u.latencyMs, 0) / totalRequests)
       : 0;
 
   // Group by endpoint
@@ -116,7 +116,7 @@ export async function getAggregatedUsage(
     select: { id: true, name: true },
   });
 
-  const keyIds = keys.map((k: { id: string }) => k.id);
+  const keyIds = keys.map((k) => k.id);
 
   const usage = await db.apiKeyUsage.groupBy({
     by: ["apiKeyId"],
@@ -127,11 +127,11 @@ export async function getAggregatedUsage(
     _count: { id: true },
   });
 
-  const keyMap = new Map(keys.map((k: { id: string; name: string }) => [k.id, k.name]));
+  const keyMap = new Map(keys.map((k) => [k.id, k.name]));
 
   return {
-    totalRequests: usage.reduce((sum: number, u: { _count: { id: number } }) => sum + u._count.id, 0),
-    byKey: usage.map((u: { apiKeyId: string; _count: { id: number } }) => ({
+    totalRequests: usage.reduce((sum, u) => sum + u._count.id, 0),
+    byKey: usage.map((u) => ({
       keyId: u.apiKeyId,
       keyName: keyMap.get(u.apiKeyId) || "Unknown",
       requests: u._count.id,
