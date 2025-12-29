@@ -1,3 +1,4 @@
+import { createHash, randomUUID } from "crypto";
 import { LedgerEvent, LedgerEventType } from "./types";
 
 // In-Memory Database Simulation
@@ -8,15 +9,9 @@ const MEMORY_LEDGER: LedgerEvent[] = [];
  * SIMULATED CRYPTO HASH
  * In production, replace with SHA-256 (Node crypto or WebCrypto).
  */
-function mockHash(payload: Record<string, any>): string {
+function hashPayload(payload: Record<string, any>): string {
     const compact = JSON.stringify(payload);
-    let hash = 0;
-    for (let i = 0; i < compact.length; i++) {
-        const char = compact.charCodeAt(i);
-        hash = (hash << 5) - hash + char;
-        hash |= 0;
-    }
-    return "0x" + Math.abs(hash).toString(16).padStart(8, '0');
+    return createHash("sha256").update(compact).digest("hex");
 }
 
 /**
@@ -42,7 +37,7 @@ export const LEDGER = {
 
         // 2. Construct Event
         const event: LedgerEvent = {
-            event_id: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+            event_id: `evt_${randomUUID()}`,
             occurred_at: new Date().toISOString(),
             type,
             asset_id,
@@ -51,7 +46,7 @@ export const LEDGER = {
                 id: actorId
             },
             prev_event_id: prevEvent?.event_id,
-            payload_hash: mockHash(payload),
+            payload_hash: hashPayload(payload),
             payload
         };
 

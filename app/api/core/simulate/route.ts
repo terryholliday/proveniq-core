@@ -6,6 +6,7 @@ import {
     MARKETPLACE_POLICY_V1
 } from "@/lib/core/policies";
 import { AssetInputs, DecisionResponse } from "@/lib/core/types";
+import { parseAssetId, parseAssetInputs } from "@/lib/core/validation";
 
 // Force pure compute, no caching for simulation
 export const dynamic = 'force-dynamic';
@@ -19,30 +20,50 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(req: NextRequest) {
     try {
-        const body = await req.json();
+        let body: unknown;
+        try {
+            body = await req.json();
+        } catch (error) {
+            console.error(error);
+            return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+        }
+
+        if (!body || typeof body !== "object") {
+            return NextResponse.json({ error: "Request body must be an object" }, { status: 400 });
+        }
+
         const { assetId, inputs } = body as {
             assetId: string;
             inputs: AssetInputs;
         };
 
-        if (!assetId || !inputs) {
-            return NextResponse.json({ error: "Missing assetId or inputs" }, { status: 400 });
+        const assetIdResult = parseAssetId(assetId);
+        if (!assetIdResult.ok) {
+            return NextResponse.json({ error: assetIdResult.error }, { status: 400 });
+        }
+
+        const inputsResult = parseAssetInputs(inputs);
+        if (!inputsResult.ok) {
+            return NextResponse.json(
+                { error: inputsResult.error, details: inputsResult.details },
+                { status: 400 }
+            );
         }
 
         const results: Record<string, DecisionResponse> = {};
 
         // 1. Run Insurer
-        results['insurer'] = evaluateAsset(assetId, inputs, INSURER_POLICY_V1);
+        results['insurer'] = evaluateAsset(assetIdResult.data, inputsResult.data, INSURER_POLICY_V1);
 
         // 2. Run Lender
-        results['lender'] = evaluateAsset(assetId, inputs, LENDER_POLICY_V1);
+        results['lender'] = evaluateAsset(assetIdResult.data, inputsResult.data, LENDER_POLICY_V1);
 
         // 3. Run Marketplace
-        results['marketplace'] = evaluateAsset(assetId, inputs, MARKETPLACE_POLICY_V1);
+        results['marketplace'] = evaluateAsset(assetIdResult.data, inputsResult.data, MARKETPLACE_POLICY_V1);
 
         // Return Map
         return NextResponse.json({
-            assetId,
+            assetId: assetIdResult.data,
             timestamp: new Date().toISOString(),
             results
         });
