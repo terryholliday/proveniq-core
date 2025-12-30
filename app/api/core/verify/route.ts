@@ -3,6 +3,7 @@ import { evaluateAsset } from "@/lib/core/decision";
 import { CORE_POLICIES } from "@/lib/core/policies";
 import { LEDGER } from "@/lib/core/ledger";
 import { AssetInputs } from "@/lib/core/types";
+import { requireApiKey } from "@/lib/api/serviceAuth";
 
 /**
  * POST /api/core/verify
@@ -13,6 +14,9 @@ import { AssetInputs } from "@/lib/core/types";
  */
 export async function POST(req: NextRequest) {
     try {
+        const auth = await requireApiKey(req);
+        if (!auth.ok) return auth.response;
+
         const body = await req.json();
         const { assetId, inputs, policyId } = body as {
             assetId: string;

@@ -1,7 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { requireApiKey } from "@/lib/api/serviceAuth";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
+        const auth = await requireApiKey(request);
+        if (!auth.ok) return auth.response;
+
         const body = await request.json();
 
         if (!body.asset_id) {
@@ -20,7 +24,7 @@ export async function POST(request: Request) {
             timestamp: new Date().toISOString()
         });
 
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: "Verification Failed" }, { status: 500 });
     }
 }

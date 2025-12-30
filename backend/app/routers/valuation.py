@@ -9,6 +9,7 @@ from app.services.valuation import (
     ValuationResult,
 )
 from app.services.ledger import LedgerClient
+from app.auth import AuthenticatedUser, get_current_user
 
 router = APIRouter(prefix="/v1/valuations", tags=["valuations"])
 
@@ -18,7 +19,10 @@ valuation_engine = ValuationEngine(ledger_client=ledger_client)
 
 
 @router.post("", response_model=ValuationResult)
-async def create_valuation(request: ValuationRequest):
+async def create_valuation(
+    request: ValuationRequest,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+):
     """
     Generate a valuation for an asset.
     
@@ -33,7 +37,10 @@ async def create_valuation(request: ValuationRequest):
 
 
 @router.get("/{valuation_id}", response_model=ValuationResult)
-async def get_valuation(valuation_id: UUID):
+async def get_valuation(
+    valuation_id: UUID,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+):
     """
     Get a previously computed valuation by ID.
     

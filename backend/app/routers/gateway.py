@@ -6,11 +6,12 @@ Apps can call Core to coordinate with other services.
 
 from typing import Optional
 from uuid import UUID
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 import httpx
 
+from app.auth import AuthenticatedUser, get_current_user
 router = APIRouter(prefix="/v1/gateway", tags=["gateway"])
 
 
@@ -68,7 +69,9 @@ class SubmitClaimRequest(BaseModel):
 
 
 @router.get("/health", response_model=list[ServiceHealthResponse])
-async def check_all_services():
+async def check_all_services(
+    current_user: AuthenticatedUser = Depends(get_current_user),
+):
     """Check health of all PROVENIQ services."""
     results = []
     
@@ -106,7 +109,10 @@ async def check_all_services():
 
 
 @router.get("/health/{service}", response_model=ServiceHealthResponse)
-async def check_service(service: str):
+async def check_service(
+    service: str,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+):
     """Check health of a specific service."""
     if service not in SERVICE_URLS:
         raise HTTPException(status_code=404, detail=f"Unknown service: {service}")
@@ -146,7 +152,10 @@ async def check_service(service: str):
 
 
 @router.post("/protect/quote")
-async def get_protect_quote(request: GetQuoteRequest):
+async def get_protect_quote(
+    request: GetQuoteRequest,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+):
     """
     Get an insurance quote from Protect.
     
@@ -188,7 +197,10 @@ async def get_protect_quote(request: GetQuoteRequest):
 
 
 @router.post("/transit/shipment")
-async def create_shipment(request: CreateShipmentRequest):
+async def create_shipment(
+    request: CreateShipmentRequest,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+):
     """
     Create a shipment in Transit.
     
@@ -214,7 +226,10 @@ async def create_shipment(request: CreateShipmentRequest):
 
 
 @router.post("/protect/claim")
-async def submit_claim(request: SubmitClaimRequest):
+async def submit_claim(
+    request: SubmitClaimRequest,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+):
     """
     Submit a claim to Protect.
     
@@ -240,7 +255,11 @@ async def submit_claim(request: SubmitClaimRequest):
 
 
 @router.get("/ledger/asset/{asset_id}/events")
-async def get_asset_ledger_events(asset_id: UUID, limit: int = 100):
+async def get_asset_ledger_events(
+    asset_id: UUID,
+    limit: int = 100,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+):
     """Get all Ledger events for an asset."""
     async with httpx.AsyncClient(timeout=30.0) as client:
         try:

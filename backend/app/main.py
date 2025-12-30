@@ -13,7 +13,7 @@ import firebase_admin
 from fastapi import FastAPI, Depends, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
-from firebase_admin import auth, credentials
+from firebase_admin import credentials
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from reportlab.lib.pagesizes import letter
@@ -219,21 +219,7 @@ if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
 
 
-class AuthenticatedUser(BaseModel):
-    uid: str
-    email: Optional[str] = None
-
-
-async def get_current_user(request: Request) -> AuthenticatedUser:
-    auth_header = request.headers.get("authorization")
-    if not auth_header or not auth_header.startswith("Bearer "):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing token")
-    token = auth_header.split(" ", 1)[1]
-    try:
-        decoded = auth.verify_id_token(token)
-        return AuthenticatedUser(uid=decoded["uid"], email=decoded.get("email"))
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+from app.auth import AuthenticatedUser, get_current_user
 
 
 # -----------------------------------------------------------------------------
@@ -343,6 +329,80 @@ def compute_content_hash(items: list[dict]) -> str:
 
 
 # -----------------------------------------------------------------------------
+# Authorization helpers
+# -----------------------------------------------------------------------------
+
+async def get_user_org_id(db: AsyncSession, current_user: AuthenticatedUser) -> UUID:
+    user_row = await db.execute(
+        select(User.org_id).where(User.firebase_uid == current_user.uid)
+    )
+    org_id = user_row.scalar_one_or_none()
+    if not org_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User not assigned to organization")
+    return org_id
+
+
+async def require_org_access_for_inspection(
+    db: AsyncSession,
+    inspection_id: UUID,
+    current_user: AuthenticatedUser,
+) -> UUID:
+    org_row = await db.execute(
+        select(Property.org_id)
+        .join(Unit, Unit.property_id == Property.id)
+        .join(Lease, Lease.unit_id == Unit.id)
+        .join(Inspection, Inspection.lease_id == Lease.id)
+        .where(Inspection.id == inspection_id)
+    )
+    org_id = org_row.scalar_one_or_none()
+    if not org_id:
+        raise HTTPException(status_code=404, detail="Inspection not found")
+
+    user_org_id = await get_user_org_id(db, current_user)
+    if user_org_id != org_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
+    return org_id
+
+
+async def require_org_access_for_lease(
+    db: AsyncSession,
+    lease_id: UUID,
+    current_user: AuthenticatedUser,
+) -> UUID:
+    org_row = await db.execute(
+        select(Property.org_id)
+        .join(Unit, Unit.property_id == Property.id)
+        .join(Lease, Lease.unit_id == Unit.id)
+        .where(Lease.id == lease_id)
+    )
+    org_id = org_row.scalar_one_or_none()
+    if not org_id:
+        raise HTTPException(status_code=404, detail="Lease not found")
+
+    user_org_id = await get_user_org_id(db, current_user)
+    if user_org_id != org_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
+    return org_id
+
+
+async def require_inspection_item(
+    db: AsyncSession,
+    inspection_id: UUID,
+    item_id: UUID,
+) -> None:
+    item_row = await db.execute(
+        select(InspectionItem.id).where(
+            InspectionItem.id == item_id,
+            InspectionItem.inspection_id == inspection_id,
+        )
+    )
+    if not item_row.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Item does not belong to inspection")
+
+
+# -----------------------------------------------------------------------------
 # FastAPI app
 # -----------------------------------------------------------------------------
 
@@ -374,6 +434,7 @@ async def request_magic_link(
     db: AsyncSession = Depends(get_db),
     current_user: AuthenticatedUser = Depends(get_current_user),
 ):
+    await require_org_access_for_lease(db, payload.lease_id, current_user)
     lease = await db.get(Lease, payload.lease_id)
     if not lease:
         raise HTTPException(status_code=404, detail="Lease not found")
@@ -404,22 +465,12 @@ async def presign_evidence(
     db: AsyncSession = Depends(get_db),
     current_user: AuthenticatedUser = Depends(get_current_user),
 ):
+    org_id = await require_org_access_for_inspection(db, inspection_id, current_user)
+    await require_inspection_item(db, inspection_id, payload.item_id)
+
     inspection = await db.get(Inspection, inspection_id)
-    if not inspection:
-        raise HTTPException(status_code=404, detail="Inspection not found")
     if inspection.status != InspectionStatus.DRAFT.value:
         raise HTTPException(status_code=400, detail="Inspection not in draft state")
-
-    # Get org_id via join to avoid lazy load issues
-    org_row = await db.execute(
-        select(Property.org_id)
-        .join(Unit, Unit.property_id == Property.id)
-        .join(Lease, Lease.unit_id == Unit.id)
-        .where(Lease.id == inspection.lease_id)
-    )
-    org_id = org_row.scalar_one_or_none()
-    if not org_id:
-        raise HTTPException(status_code=400, detail="Org not found for lease")
 
     object_path = generate_object_path(org_id=org_id, inspection_id=inspection_id, item_id=payload.item_id, file_name=payload.file_name)
     upload_url, expires_at = await presign_upload(object_path, payload.mime_type, settings.presign_ttl_seconds)
@@ -433,11 +484,16 @@ async def confirm_evidence(
     db: AsyncSession = Depends(get_db),
     current_user: AuthenticatedUser = Depends(get_current_user),
 ):
+    org_id = await require_org_access_for_inspection(db, inspection_id, current_user)
+    await require_inspection_item(db, inspection_id, payload.item_id)
+
     inspection = await db.get(Inspection, inspection_id)
-    if not inspection:
-        raise HTTPException(status_code=404, detail="Inspection not found")
     if inspection.status != InspectionStatus.DRAFT.value:
         raise HTTPException(status_code=400, detail="Inspection not in draft state")
+
+    expected_prefix = f"orgs/{org_id}/inspections/{inspection_id}/items/{payload.item_id}/"
+    if not payload.object_path.startswith(expected_prefix):
+        raise HTTPException(status_code=400, detail="Invalid object path")
 
     # HEAD check to verify object exists and size matches
     head_ok = False
@@ -494,9 +550,9 @@ async def submit_inspection(
     db: AsyncSession = Depends(get_db),
     current_user: AuthenticatedUser = Depends(get_current_user),
 ):
+    await require_org_access_for_inspection(db, inspection_id, current_user)
+
     inspection = await db.get(Inspection, inspection_id)
-    if not inspection:
-        raise HTTPException(status_code=404, detail="Inspection not found")
     if inspection.status != InspectionStatus.DRAFT.value:
         raise HTTPException(status_code=400, detail="Inspection not in draft state")
 
@@ -510,9 +566,9 @@ async def submit_inspection(
 
 @app.get("/inspections/{inspection_id}/certificate.pdf")
 async def inspection_certificate(inspection_id: UUID, db: AsyncSession = Depends(get_db), current_user: AuthenticatedUser = Depends(get_current_user)):
+    await require_org_access_for_inspection(db, inspection_id, current_user)
+
     inspection = await db.get(Inspection, inspection_id)
-    if not inspection:
-        raise HTTPException(status_code=404, detail="Inspection not found")
     if inspection.status == InspectionStatus.DRAFT.value:
         raise HTTPException(status_code=400, detail="Inspection not submitted")
     if not inspection.content_hash:
