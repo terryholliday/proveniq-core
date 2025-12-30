@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { LEDGER } from "@/lib/core/ledger";
 import { DecisionResponse } from "@/lib/core/types";
+import { requireApiKey } from "@/lib/api/serviceAuth";
 
 // Force Dynamic because we are querying runtime memory/db
 export const dynamic = 'force-dynamic';
@@ -19,6 +20,9 @@ interface Context {
  */
 export async function GET(req: NextRequest, { params }: Context) {
     try {
+        const auth = await requireApiKey(req);
+        if (!auth.ok) return auth.response;
+
         const { event_id } = await params;
         const eventId = event_id;
 

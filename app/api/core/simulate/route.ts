@@ -6,6 +6,7 @@ import {
     MARKETPLACE_POLICY_V1
 } from "@/lib/core/policies";
 import { AssetInputs, DecisionResponse } from "@/lib/core/types";
+import { requireApiKey } from "@/lib/api/serviceAuth";
 
 // Force pure compute, no caching for simulation
 export const dynamic = 'force-dynamic';
@@ -19,6 +20,9 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(req: NextRequest) {
     try {
+        const auth = await requireApiKey(req);
+        if (!auth.ok) return auth.response;
+
         const body = await req.json();
         const { assetId, inputs } = body as {
             assetId: string;
