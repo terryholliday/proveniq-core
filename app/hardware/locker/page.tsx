@@ -5,7 +5,7 @@ import { PROVENIQ_DNA } from "@/lib/config";
 const lockerProduct = PROVENIQ_DNA.products.find((p) => p.id === "locker");
 
 export const metadata = {
-  title: "Lockers | Proveniq",
+  title: "Locker | Proveniq",
   description: "Institutional-grade custody hardware with integrated verification sensors.",
 };
 
@@ -56,7 +56,7 @@ export default function LockerPage() {
                 The Solution
               </h2>
               <p className="text-slate-400 leading-relaxed mb-4">
-                PROVENIQ Lockers are custody devices with integrated sensors
+                The Proveniq Locker is a custody device with integrated sensors
                 that create continuous, tamper-evident proof of possession:
               </p>
               <ul className="space-y-3 text-slate-400">

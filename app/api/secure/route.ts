@@ -1,14 +1,17 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { requireApiKey } from "@/lib/api/serviceAuth";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
+        const auth = await requireApiKey(request);
+        if (!auth.ok) return auth.response;
+
         const body = await request.json();
 
         // Simulating HSM Interaction
         // In real life, check biometric header or signature
         if (body.signature !== "VALID_MOCK_SIG") {
-            // For demo, we are lenient unless specifically failing test
-            // return NextResponse.json({ error: "Access Denied" }, { status: 403 });
+            return NextResponse.json({ error: "Access Denied" }, { status: 403 });
         }
 
         await new Promise(resolve => setTimeout(resolve, 1200));
@@ -21,7 +24,7 @@ export async function POST(request: Request) {
             timestamp: new Date().toISOString()
         });
 
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: "Security Exception" }, { status: 500 });
     }
 }

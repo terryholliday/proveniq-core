@@ -24,13 +24,20 @@ export async function POST(req: NextRequest) {
     const signature = req.headers.get("x-docusign-signature-1") || "";
     const webhookSecret = process.env.DOCUSIGN_WEBHOOK_SECRET;
 
-    // Verify signature if secret is configured
-    if (webhookSecret && signature) {
-      const isValid = verifyWebhookSignature(payload, signature, webhookSecret);
-      if (!isValid) {
-        console.error("[DocuSign Webhook] Invalid signature");
-        return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-      }
+    if (!webhookSecret) {
+      console.error("[DocuSign Webhook] Missing webhook secret configuration");
+      return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
+    }
+
+    if (!signature) {
+      console.error("[DocuSign Webhook] Missing signature");
+      return NextResponse.json({ error: "Missing signature" }, { status: 401 });
+    }
+
+    const isValid = verifyWebhookSignature(payload, signature, webhookSecret);
+    if (!isValid) {
+      console.error("[DocuSign Webhook] Invalid signature");
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
     const data = JSON.parse(payload);

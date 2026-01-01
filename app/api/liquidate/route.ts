@@ -1,7 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { requireApiKey } from "@/lib/api/serviceAuth";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
+        const auth = await requireApiKey(request);
+        if (!auth.ok) return auth.response;
+
         const body = await request.json();
 
         // Simulating Matching Engine
@@ -17,7 +21,7 @@ export async function POST(request: Request) {
             timestamp: new Date().toISOString()
         });
 
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: "Liquidation Failed" }, { status: 500 });
     }
 }

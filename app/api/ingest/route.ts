@@ -1,7 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { requireApiKey } from "@/lib/api/serviceAuth";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
+        const auth = await requireApiKey(request);
+        if (!auth.ok) return auth.response;
+
         const body = await request.json();
 
         // Simulating Ingestion Delay
@@ -18,7 +22,7 @@ export async function POST(request: Request) {
             timestamp: new Date().toISOString(),
             confidence_score: 0.99
         });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: "Invalid Payload" }, { status: 400 });
     }
 }
